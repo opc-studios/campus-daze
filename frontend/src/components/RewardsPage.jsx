@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Header from './Header'
 import { rewardApi } from '../services/api'
 
 function RewardsPage() {
@@ -38,11 +39,7 @@ function RewardsPage() {
   return (
     <div className="min-h-screen">
       <div className="ui-overlay">
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-white/80 backdrop-blur-sm">
-          <button onClick={() => navigate('/plaza')} className="btn-primary">返回广场</button>
-          <h1 className="text-xl font-bold text-academic-purple">通关奖励</h1>
-          <div className="w-20"></div>
-        </div>
+        <Header title="通关奖励" showBack />
         
         <div className="absolute top-20 left-4 right-4 bottom-4">
           <div className="card-game mb-6">

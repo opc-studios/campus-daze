@@ -1,25 +1,35 @@
 import { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import Header from './Header'
 import { logout } from '../redux/slices/authSlice'
+import { setCharacters, setCurrentCharacter } from '../redux/slices/characterSlice'
 import { authApi, characterApi, taskApi } from '../services/api'
 
 function PlazaPage() {
   const [user, setUser] = useState(null)
-  const [currentCharacter, setCurrentCharacter] = useState(null)
   const [tasks, setTasks] = useState([])
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  
+  const currentCharacter = useSelector(state => state.character.currentCharacter)
+  const characters = useSelector(state => state.character.characters)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userResponse = await authApi.getMe()
-        setUser(userResponse.data)
+        try {
+          const userResponse = await authApi.getMe()
+          setUser(userResponse.data)
+        } catch {
+        }
         
-        const charsResponse = await characterApi.getAll()
-        if (charsResponse.data.length > 0) {
-          setCurrentCharacter(charsResponse.data[0])
+        if (characters.length === 0) {
+          const charsResponse = await characterApi.getAll()
+          if (charsResponse.data.length > 0) {
+            dispatch(setCharacters(charsResponse.data))
+            dispatch(setCurrentCharacter(charsResponse.data[0]))
+          }
         }
         
         const tasksResponse = await taskApi.getAll(1)
@@ -32,23 +42,12 @@ function PlazaPage() {
       }
     }
     fetchData()
-  }, [dispatch, navigate])
-
-  const handleLogout = () => {
-    dispatch(logout())
-    navigate('/')
-  }
+  }, [dispatch, navigate, characters.length])
 
   return (
     <div className="min-h-screen">
       <div className="ui-overlay">
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-white/80 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-academic-purple">学术喵的奇幻之旅</h1>
-            {user && <span className="text-gray-600">{user.username}</span>}
-          </div>
-          <button onClick={handleLogout} className="btn-danger">退出登录</button>
-        </div>
+        <Header title="学术喵的奇幻之旅" />
         
         {currentCharacter && (
           <div className="absolute bottom-4 left-4 card-game w-64">

@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../redux/slices/authSlice'
-import { authApi } from '../services/api'
+import { setCharacters, setCurrentCharacter } from '../redux/slices/characterSlice'
+import { authApi, characterApi } from '../services/api'
 
 function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const dispatch = useDispatch()
@@ -15,14 +16,25 @@ function LoginPage() {
     e.preventDefault()
     setError('')
     try {
-      const response = await authApi.login({ username: email, password })
+      const response = await authApi.login({ username: identifier, password })
       dispatch(login({
-        user: response.data.user,
+        user: { username: identifier },
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
       }))
-      const charsResponse = await authApi.getMe()
-      navigate('/plaza')
+      
+      try {
+        const charsResponse = await characterApi.getAll()
+        if (charsResponse.data && charsResponse.data.length > 0) {
+          dispatch(setCharacters(charsResponse.data))
+          dispatch(setCurrentCharacter(charsResponse.data[0]))
+          navigate('/plaza')
+        } else {
+          navigate('/create-character')
+        }
+      } catch {
+        navigate('/create-character')
+      }
     } catch (err) {
       setError(err.response?.data?.detail || '登录失败')
     }
@@ -44,13 +56,13 @@ function LoginPage() {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">用户名</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sakura focus:border-transparent outline-none transition-all"
-              placeholder="请输入邮箱"
+              placeholder="请输入用户名"
               required
             />
           </div>
@@ -64,6 +76,11 @@ function LoginPage() {
               placeholder="请输入密码"
               required
             />
+          </div>
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-campus-blue text-sm hover:underline">
+              忘记密码？
+            </Link>
           </div>
           <button
             type="submit"

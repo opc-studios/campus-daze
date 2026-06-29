@@ -47,6 +47,7 @@ body {
   @apply bg-gradient-to-r from-sakura to-academic-purple;
   @apply hover:scale-105 hover:shadow-lg;
   @apply active:scale-95;
+  pointer-events: auto;
 }
 
 .btn-primary {

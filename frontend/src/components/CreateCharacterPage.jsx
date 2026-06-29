@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import Header from './Header'
+import { setCharacters, setCurrentCharacter } from '../redux/slices/characterSlice'
 import { characterApi } from '../services/api'
 
 const characters = [
@@ -22,6 +25,7 @@ function CreateCharacterPage() {
   const [selectedCharacter, setSelectedCharacter] = useState(null)
   const [selectedProfession, setSelectedProfession] = useState(null)
   const [error, setError] = useState('')
+  const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -39,6 +43,13 @@ function CreateCharacterPage() {
         character_template_id: selectedCharacter,
         profession_id: selectedProfession,
       })
+      
+      const charsResponse = await characterApi.getAll()
+      if (charsResponse.data && charsResponse.data.length > 0) {
+        dispatch(setCharacters(charsResponse.data))
+        dispatch(setCurrentCharacter(charsResponse.data[0]))
+      }
+      
       navigate('/plaza')
     } catch (err) {
       setError(err.response?.data?.detail || '创建角色失败')
@@ -46,10 +57,12 @@ function CreateCharacterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="card-game max-w-4xl w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-academic-purple mb-2">选择你的学术喵</h1>
+    <div className="min-h-screen relative">
+      <Header title="创建角色" />
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="card-game max-w-4xl w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-academic-purple mb-2">选择你的学术喵</h1>
           <p className="text-gray-500">选择一个角色开启你的校园冒险</p>
         </div>
         
@@ -122,6 +135,7 @@ function CreateCharacterPage() {
             创建角色
           </button>
         </form>
+      </div>
       </div>
     </div>
   )

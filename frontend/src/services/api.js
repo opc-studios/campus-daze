@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  maxRedirects: 0,
 })
 
 axiosInstance.interceptors.request.use(
@@ -48,18 +49,28 @@ axiosInstance.interceptors.response.use(
 
 export const authApi = {
   register: (data) => axiosInstance.post('/auth/register', data),
-  login: (data) => axiosInstance.post('/auth/login', data),
+  login: (data) => axiosInstance.post('/auth/login', data, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    transformRequest: (obj) => {
+      let str = [];
+      for (let p in obj)
+        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+      return str.join("&");
+    }
+  }),
   refresh: (refreshToken) => axiosInstance.post('/auth/refresh', { refreshToken }),
   getMe: () => axiosInstance.get('/auth/me'),
+  forgotPassword: (data) => axiosInstance.post('/auth/forgot-password', data),
+  resetPassword: (data) => axiosInstance.post('/auth/reset-password', data),
 }
 
 export const characterApi = {
-  create: (data) => axiosInstance.post('/characters', data),
-  getAll: () => axiosInstance.get('/characters'),
-  getById: (id) => axiosInstance.get(`/characters/${id}`),
-  update: (id, data) => axiosInstance.put(`/characters/${id}`, data),
-  updateEquipment: (id, data) => axiosInstance.put(`/characters/${id}/equipment`, data),
-  transform: (id, data) => axiosInstance.post(`/characters/${id}/transform`, data),
+  create: (data) => axiosInstance.post('/characters/', data),
+  getAll: () => axiosInstance.get('/characters/'),
+  getById: (id) => axiosInstance.get(`/characters/${id}/`),
+  update: (id, data) => axiosInstance.put(`/characters/${id}/`, data),
+  updateEquipment: (id, data) => axiosInstance.put(`/characters/${id}/equipment/`, data),
+  transform: (id, data) => axiosInstance.post(`/characters/${id}/transform/`, data),
 }
 
 export const battleApi = {

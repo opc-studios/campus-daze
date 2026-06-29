@@ -22,3 +22,11 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
+
+class ForgotPasswordRequest(BaseModel):
+    username: str
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    username: str
+    new_password: str

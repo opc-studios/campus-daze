@@ -11,8 +11,11 @@ load_dotenv()
 
 from api.routers import auth, character, battle, task, map, npc, reward, rest
 from api.websocket import battle as ws_battle, chat as ws_chat
+from api.utils.database import init_sqlite_tables
 
-app = FastAPI(title="学术喵的奇幻之旅", version="1.0.0")
+init_sqlite_tables()
+
+app = FastAPI(title="学术喵的奇幻之旅", version="1.0.0", redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,

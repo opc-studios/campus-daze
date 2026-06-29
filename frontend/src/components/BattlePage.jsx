@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { battleApi, characterApi } from '../services/api'
+import { logout } from '../redux/slices/authSlice'
+import { battleApi, characterApi, authApi } from '../services/api'
 
 const skills = [
   { id: 1, name: '普通攻击', damage: 20, mpCost: 0, icon: '⚔️' },
@@ -16,29 +18,55 @@ function BattlePage() {
   const [turn, setTurn] = useState('player')
   const [battleLog, setBattleLog] = useState([])
   const [isAnimating, setIsAnimating] = useState(false)
+  const [user, setUser] = useState(null)
+  const dispatch = useDispatch()
   const navigate = useNavigate()
+  
+  const currentCharacter = useSelector(state => state.character.currentCharacter)
 
   useEffect(() => {
     const initBattle = async () => {
       try {
-        const charsResponse = await characterApi.getAll()
-        if (charsResponse.data.length > 0) {
-          const char = charsResponse.data[0]
+        try {
+          const userResponse = await authApi.getMe()
+          setUser(userResponse.data)
+        } catch {
+        }
+        
+        if (currentCharacter) {
           setCharacter({
-            hp: char.hp,
-            maxHp: char.max_hp,
-            mp: char.mp,
-            maxMp: char.max_mp,
-            name: char.name,
-            id: char.id,
+            hp: currentCharacter.hp,
+            maxHp: currentCharacter.max_hp,
+            mp: currentCharacter.mp,
+            maxMp: currentCharacter.max_mp,
+            name: currentCharacter.name,
+            id: currentCharacter.id,
           })
+        } else {
+          const charsResponse = await characterApi.getAll()
+          if (charsResponse.data.length > 0) {
+            const char = charsResponse.data[0]
+            setCharacter({
+              hp: char.hp,
+              maxHp: char.max_hp,
+              mp: char.mp,
+              maxMp: char.max_mp,
+              name: char.name,
+              id: char.id,
+            })
+          }
         }
       } catch (err) {
         console.error('Failed to get character:', err)
       }
     }
     initBattle()
-  }, [])
+  }, [currentCharacter])
+
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate('/')
+  }
 
   const addLog = (message) => {
     setBattleLog(prev => [...prev, { id: Date.now(), message }])
@@ -90,9 +118,14 @@ function BattlePage() {
     <div className="min-h-screen bg-gradient-to-b from-red-900 to-gray-900">
       <div className="ui-overlay">
         <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-black/50">
-          <button onClick={() => navigate('/plaza')} className="btn-danger">逃跑</button>
-          <h1 className="text-xl font-bold text-white">战斗中</h1>
-          <div className="w-20"></div>
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/plaza')} className="btn-danger">逃跑</button>
+            <h1 className="text-xl font-bold text-white">战斗中</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {user && <span className="text-white">{user.username}</span>}
+            <button onClick={handleLogout} className="btn-danger">退出登录</button>
+          </div>
         </div>
         
         <div className="absolute top-20 left-4 card-game w-72">

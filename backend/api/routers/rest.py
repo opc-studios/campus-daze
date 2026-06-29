@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import datetime, timedelta
 
 from ..utils.database import get_db
@@ -9,22 +10,22 @@ router = APIRouter()
 
 @router.post("/start")
 async def start_rest(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    character = db.execute("SELECT * FROM characters_gamecharacter WHERE user_id = %s LIMIT 1", (current_user.id,)).fetchone()
+    character = db.execute(text("SELECT * FROM characters_gamecharacter WHERE user_id = :user_id LIMIT 1"), {"user_id": current_user.id}).fetchone()
     if character is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No character found")
     
-    db.execute("INSERT INTO rest_restrecord (character_id, start_time) VALUES (%s, %s)", (character.id, datetime.now()))
+    db.execute(text("INSERT INTO rest_restrecord (character_id, start_time) VALUES (:character_id, :start_time)"), {"character_id": character.id, "start_time": datetime.now()})
     db.commit()
     
     return {"message": "Rest started", "start_time": datetime.now().isoformat()}
 
 @router.post("/end")
 async def end_rest(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    character = db.execute("SELECT * FROM characters_gamecharacter WHERE user_id = %s LIMIT 1", (current_user.id,)).fetchone()
+    character = db.execute(text("SELECT * FROM characters_gamecharacter WHERE user_id = :user_id LIMIT 1"), {"user_id": current_user.id}).fetchone()
     if character is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No character found")
     
-    rest_record = db.execute("SELECT * FROM rest_restrecord WHERE character_id = %s AND end_time IS NULL ORDER BY start_time DESC LIMIT 1", (character.id,)).fetchone()
+    rest_record = db.execute(text("SELECT * FROM rest_restrecord WHERE character_id = :character_id AND end_time IS NULL ORDER BY start_time DESC LIMIT 1"), {"character_id": character.id}).fetchone()
     if rest_record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active rest found")
     
@@ -33,16 +34,16 @@ async def end_rest(current_user = Depends(get_current_user), db: Session = Depen
     exp_earned = min(200, int(duration * 3))
     cat_food_earned = min(10, int(duration // 10))
     
-    db.execute("UPDATE rest_restrecord SET end_time = %s, coins_earned = %s, exp_earned = %s, cat_food_earned = %s WHERE id = %s",
-               (datetime.now(), coins_earned, exp_earned, cat_food_earned, rest_record.id))
-    db.execute("UPDATE characters_gamecharacter SET exp = exp + %s WHERE id = %s", (exp_earned, character.id))
+    db.execute(text("UPDATE rest_restrecord SET end_time = :end_time, coins_earned = :coins_earned, exp_earned = :exp_earned, cat_food_earned = :cat_food_earned WHERE id = :record_id"),
+               {"end_time": datetime.now(), "coins_earned": coins_earned, "exp_earned": exp_earned, "cat_food_earned": cat_food_earned, "record_id": rest_record.id})
+    db.execute(text("UPDATE characters_gamecharacter SET exp = exp + :exp_earned WHERE id = :character_id"), {"exp_earned": exp_earned, "character_id": character.id})
     db.commit()
     
     return {"message": "Rest ended", "rewards": {"coins": coins_earned, "exp": exp_earned, "cat_food": cat_food_earned}}
 
 @router.get("/offline")
 async def get_offline_rewards(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    character = db.execute("SELECT * FROM characters_gamecharacter WHERE user_id = %s LIMIT 1", (current_user.id,)).fetchone()
+    character = db.execute(text("SELECT * FROM characters_gamecharacter WHERE user_id = :user_id LIMIT 1"), {"user_id": current_user.id}).fetchone()
     if character is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No character found")
     

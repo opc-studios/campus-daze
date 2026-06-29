@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import Header from './Header'
 import { restApi, characterApi } from '../services/api'
 
 function RestPage() {
@@ -8,13 +10,19 @@ function RestPage() {
   const [restTime, setRestTime] = useState(0)
   const [offlineRewards, setOfflineRewards] = useState(null)
   const navigate = useNavigate()
+  
+  const currentCharacter = useSelector(state => state.character.currentCharacter)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const charsResponse = await characterApi.getAll()
-        if (charsResponse.data.length > 0) {
-          setCharacter(charsResponse.data[0])
+        if (currentCharacter) {
+          setCharacter(currentCharacter)
+        } else {
+          const charsResponse = await characterApi.getAll()
+          if (charsResponse.data.length > 0) {
+            setCharacter(charsResponse.data[0])
+          }
         }
         const offlineResponse = await restApi.getOffline()
         if (offlineResponse.data.rewards && Object.keys(offlineResponse.data.rewards).length > 0) {
@@ -25,7 +33,7 @@ function RestPage() {
       }
     }
     fetchData()
-  }, [])
+  }, [currentCharacter])
 
   useEffect(() => {
     let timer = null
@@ -69,11 +77,7 @@ function RestPage() {
   return (
     <div className="min-h-screen">
       <div className="ui-overlay">
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-white/80 backdrop-blur-sm">
-          <button onClick={() => navigate('/plaza')} className="btn-primary">返回广场</button>
-          <h1 className="text-xl font-bold text-academic-purple">放置休息</h1>
-          <div className="w-20"></div>
-        </div>
+        <Header title="放置休息" showBack />
         
         <div className="absolute top-20 left-4 right-4 bottom-4 flex flex-col items-center justify-center">
           <div className="card-game w-full max-w-md">

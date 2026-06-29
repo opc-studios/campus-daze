@@ -214,6 +214,15 @@ CREATE TABLE IF NOT EXISTS rest_restrecord (
     FOREIGN KEY (character_id) REFERENCES characters_gamecharacter(id)
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users_user(id)
+);
+
 INSERT INTO characters_charactertemplate (name, cat_type, personality, battle_role, base_hp, base_attack, base_defense, base_agility, base_intelligence) VALUES
 ('莉娜', '白色长毛猫', '温柔治愈型学术喵', '辅助/治疗/控场', 120, 15, 12, 10, 20),
 ('阿宇', '狸花猫', '勇敢均衡型学术喵', '近战/输出/机动', 100, 22, 10, 18, 10),
