@@ -2,136 +2,135 @@
 
 ## 项目概述
 
-回合制 RPG 游戏，前端使用 React + Redux，后端使用 FastAPI + Django REST Framework。
+回合制 RPG 游戏，前端使用 Vue 3 + Pinia，后端使用 Django REST Framework + FastAPI WebSocket。
 
 ## 项目结构
 
 ```
 campus-daze/
-├── frontend/                 # React 前端
+├── frontend/                 # Vue 3 前端
 │   ├── public/
 │   │   └── index.html
 │   ├── src/
-│   │   ├── components/      # React 组件
-│   │   │   ├── BattlePage.jsx
-│   │   │   ├── CharacterPage.jsx
-│   │   │   ├── CreateCharacterPage.jsx
-│   │   │   ├── ExplorePage.jsx
-│   │   │   ├── ForgotPasswordPage.jsx
-│   │   │   ├── Header.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── PlazaPage.jsx
-│   │   │   ├── ProtectedRoute.jsx
-│   │   │   ├── PublicRoute.jsx
-│   │   │   ├── RegisterPage.jsx
-│   │   │   ├── ResetPasswordPage.jsx
-│   │   │   ├── RestPage.jsx
-│   │   │   ├── RewardsPage.jsx
-│   │   │   └── TasksPage.jsx
-│   │   ├── redux/          # Redux 状态管理
-│   │   │   ├── slices/
-│   │   │   │   ├── authSlice.js
-│   │   │   │   ├── characterSlice.js
-│   │   │   │   └── gameSlice.js
-│   │   │   └── store.js
-│   │   ├── services/
-│   │   │   └── api.js      # API 客户端配置
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── index.html
+│   │   ├── modules/          # 业务模块
+│   │   │   ├── users/        # 用户模块
+│   │   │   │   └── views/
+│   │   │   │       ├── LoginPage.vue
+│   │   │   │       ├── RegisterPage.vue
+│   │   │   │       └── UserCenter.vue
+│   │   │   ├── characters/   # 角色模块
+│   │   │   │   └── views/
+│   │   │   │       └── CreateCharacter.vue
+│   │   │   ├── maps/         # 地图模块
+│   │   │   │   └── views/
+│   │   │   │       ├── MapPage.vue
+│   │   │   │       └── ExplorePage.vue
+│   │   │   ├── gameplay/     # 游戏玩法模块
+│   │   │   │   └── views/
+│   │   │   │       ├── BattlePage.vue
+│   │   │   │       ├── TasksPage.vue
+│   │   │   │       ├── RewardsPage.vue
+│   │   │   │       └── RestPage.vue
+│   │   │   ├── dialogue/     # 对话模块
+│   │   │   │   └── views/
+│   │   │   │       └── DialoguePage.vue
+│   │   │   ├── chapters/     # 章节模块
+│   │   │   │   └── views/
+│   │   │   │       └── ChaptersPage.vue
+│   │   │   ├── stages/       # 关卡模块
+│   │   │   │   └── views/
+│   │   │   │       └── StagesPage.vue
+│   │   │   └── saves/        # 存档模块
+│   │   │       └── views/
+│   │   │           └── SavesPage.vue
+│   │   ├── stores/           # Pinia 状态管理
+│   │   │   ├── user.js       # 用户状态
+│   │   │   ├── character.js  # 角色状态
+│   │   │   └── game.js       # 游戏状态
+│   │   ├── api/              # API 客户端
+│   │   │   └── index.js      # Axios 配置
+│   │   ├── router/           # 路由配置
+│   │   │   └── index.js      # Vue Router 配置
+│   │   ├── assets/           # 静态资源
+│   │   │   ├── sprites/      # 精灵图
+│   │   │   ├── tiles/        # 地图瓦片
+│   │   │   └── sounds/       # 音效
+│   │   ├── App.vue           # 根组件
+│   │   └── main.js           # 入口文件
 │   ├── package.json
-│   ├── package-lock.json
-│   ├── postcss.config.js
-│   ├── query/
-│   ├── tailwind.config.js
-│   └── vite.config.js
+│   ├── vite.config.js
+│   └── tailwind.config.js
 ├── backend/
-│   ├── api/                 # FastAPI 应用
-│   │   ├── routers/        # API 路由
-│   │   │   ├── __init__.py
-│   │   │   ├── auth.py
-│   │   │   ├── battle.py
-│   │   │   ├── character.py
-│   │   │   ├── map.py
-│   │   │   ├── npc.py
-│   │   │   ├── rest.py
-│   │   │   ├── reward.py
-│   │   │   └── task.py
-│   │   ├── schemas/        # Pydantic 模型
-│   │   │   ├── __init__.py
-│   │   │   ├── auth.py
-│   │   │   ├── battle.py
-│   │   │   ├── character.py
-│   │   │   ├── npc.py
-│   │   │   └── task.py
-│   │   ├── utils/           # 工具函数
-│   │   │   ├── auth.py
-│   │   │   ├── database.py
-│   │   │   └── email.py
-│   │   ├── websocket/       # WebSocket 处理器
-│   │   │   ├── battle.py
-│   │   │   └── chat.py
-│   │   └── main.py          # FastAPI 入口
-│   ├── django/              # Django REST 应用
-│   │   ├── areas/           # 区域应用
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   └── urls.py
-│   │   ├── campus_daze/     # Django 项目配置
-│   │   │   ├── asgi.py
-│   │   │   ├── settings.py
-│   │   │   ├── urls.py
-│   │   │   └── wsgi.py
-│   │   ├── characters/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
+│   ├── core/                 # Django 项目配置
+│   │   ├── settings/
+│   │   │   └── base.py       # 基础配置
+│   │   ├── urls.py           # 主路由
+│   │   ├── wsgi.py
+│   │   └── asgi.py
+│   ├── modules/              # 业务模块（Django Apps）
+│   │   ├── users/            # 用户模块
+│   │   │   ├── models.py     # User, Role, Permission
+│   │   │   ├── views.py
 │   │   │   ├── serializers.py
 │   │   │   └── urls.py
-│   │   ├── enemies/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
+│   │   ├── characters/       # 角色模块
+│   │   │   ├── models.py     # Character, Equipment, Skill
+│   │   │   ├── views.py
+│   │   │   ├── serializers.py
 │   │   │   └── urls.py
-│   │   ├── npcs/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
+│   │   ├── maps/             # 地图模块
+│   │   │   ├── models.py     # Area, MapTile, MapObject
+│   │   │   ├── views.py
+│   │   │   ├── serializers.py
 │   │   │   └── urls.py
-│   │   ├── rest/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
+│   │   ├── chapters/         # 章节模块
+│   │   │   ├── models.py     # Chapter, Scene, ChapterProgress
+│   │   │   ├── views.py
+│   │   │   ├── serializers.py
 │   │   │   └── urls.py
-│   │   ├── rewards/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
+│   │   ├── gameplay/         # 游戏玩法模块
+│   │   │   ├── models.py     # Battle, Task, Reward, RestRecord
+│   │   │   ├── views.py
+│   │   │   ├── serializers.py
 │   │   │   └── urls.py
-│   │   ├── tasks/
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
+│   │   ├── dialogue/         # 对话模块
+│   │   │   ├── models.py     # NPC, Dialogue, NPCAffinity
+│   │   │   ├── views.py
+│   │   │   ├── serializers.py
 │   │   │   └── urls.py
-│   │   └── users/
-│   │       ├── __init__.py
-│   │       ├── models.py
+│   │   ├── stages/           # 关卡模块
+│   │   │   ├── models.py     # Stage, Enemy, StageProgress
+│   │   │   ├── views.py
+│   │   │   ├── serializers.py
+│   │   │   └── urls.py
+│   │   └── saves/            # 存档模块
+│   │       ├── models.py     # SaveSlot, SaveData
+│   │       ├── views.py
 │   │       ├── serializers.py
 │   │       └── urls.py
-│   ├── create_database.py
-│   ├── create_password_reset_table.py
-│   ├── import_sql.py
-│   ├── init.sql
-│   ├── requirements.txt
-│   ├── test_api.py
-│   └── .env               # 环境变量配置
+│   ├── common/               # 公共工具模块
+│   │   ├── auth/             # 认证工具
+│   │   │   └── jwt_handler.py
+│   │   └── database/         # 数据库工具
+│   │       └── fallback.py
+│   ├── api/                  # FastAPI 应用（WebSocket）
+│   │   ├── main.py           # FastAPI 入口
+│   │   ├── config.py         # 配置
+│   │   └── routers/          # WebSocket 路由
+│   │       ├── battle_ws.py  # 战斗 WebSocket
+│   │       └── chat_ws.py    # 聊天 WebSocket
+│   ├── manage.py             # Django 管理脚本
+│   └── requirements/         # 依赖配置
+│       └── base.txt
 ├── deploy/                   # 部署配置
 │   ├── deploy.sh
 │   ├── nginx.conf
 │   ├── start.bat
-│   ├── start.sh
 │   ├── stop.bat
-│   ├── stop.sh
 │   └── supervisord.conf
 ├── doc/                      # 文档
 │   ├── PRD.md
-│   ├── TECHNICAL_ARCHITECTURE.md
-│   └── 学术喵的奇幻之旅.pdf
+│   └── TECHNICAL_ARCHITECTURE.md
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -152,7 +151,7 @@ deploy\stop.bat
 
 **Linux/macOS：**
 ```bash
-# 启动项目（自动初始化数据库、启动后端和Redis）
+# 启动项目（自动初始化数据库、启动后端）
 bash deploy/start.sh
 
 # 停止项目
@@ -173,18 +172,17 @@ npm run preview  # 预览构建结果
 **后端：**
 ```bash
 cd backend
-pip install -r requirements.txt
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000  # FastAPI 开发服务器
+pip install -r requirements/base.txt
+python manage.py runserver 0.0.0.0:8000  # Django 开发服务器
 ```
 
 ### 数据库（脚本已自动处理）
 
 ```bash
 cd backend
-python create_database.py           # 创建数据库
-python create_password_reset_table.py  # 创建密码重置表
-python init.sql                     # 初始化数据库
-python import_sql.py                # 导入 SQL 数据
+python manage.py makemigrations  # 生成迁移文件
+python manage.py migrate         # 执行迁移
+python manage.py createsuperuser # 创建超级用户
 ```
 
 ## 测试用户
@@ -196,34 +194,29 @@ python import_sql.py                # 导入 SQL 数据
 ## 技术栈
 
 ### 前端
-- React 18.2
-- React-Redux 9.0
-- Redux Toolkit 2.0
-- React Router DOM 6.20
+- Vue 3.4
+- Pinia 2.1
+- Vue Router 4.2
 - Axios 1.6
 - Tailwind CSS 3.4
 - PostCSS 8.4
 - Vite 5.0
-- @vitejs/plugin-react 4.2
+- @vitejs/plugin-vue 5.0
 - Phaser 3.80 (游戏引擎)
-- jQuery 3.7
+- Three.js 0.170
 
 ### 后端
-- FastAPI 0.110
-- Uvicorn 0.28
 - Django 5.0
 - Django REST Framework 3.14
-- SQLAlchemy 2.0
+- FastAPI 0.110
+- Uvicorn 0.28
 - Pydantic 2.5
 - Pydantic Settings 2.1
-- Redis 5.0
 - WebSockets 12.0
 - PyMySQL 1.1
 - Python JOSE 3.3 (JWT)
 - Passlib 1.7 (密码哈希)
-- Email Validator 2.0
 - Python Multipart 0.0.6
-- Python Dotenv 1.0
 - Aiofiles 23.2.1
 
 ## 环境配置
@@ -232,9 +225,10 @@ python import_sql.py                # 导入 SQL 数据
 
 ```env
 # JWT 配置
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+JWT_SECRET_KEY=your-secret-key-here
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES=60
+JWT_REFRESH_TOKEN_LIFETIME_DAYS=7
 
 # 数据库配置
 DB_USER=root
@@ -243,119 +237,101 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=campus_daze
 
-# 邮件服务配置 (SMTP)
-SMTP_SERVER=smtp.example.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@example.com
-SMTP_PASSWORD=your-smtp-authorization-code
-SMTP_FROM_EMAIL=your-email@example.com
-
 # 前端 URL
 FRONTEND_URL=http://localhost:3000
 ```
 
 ## 代码规范
 
-### 前端 (JavaScript/JSX)
-- 使用 React Hooks (useState, useEffect, useCallback, useMemo)
-- 使用 Redux Toolkit 进行状态管理
-- 组件使用 .jsx 扩展名
+### 前端 (Vue 3)
+- 使用 Composition API 和 `<script setup>` 语法
+- 使用 Pinia 进行状态管理
+- 组件使用 `.vue` 扩展名
 - 使用 async/await 处理异步操作
-- 使用 axiosInstance 进行 API 调用
+- 使用 api 实例进行 API 调用
 
 ### 后端 (Python)
-- FastAPI: 使用 Pydantic 模型进行请求/响应验证
-- Django: 使用 DRF Serializers
+- Django: 使用 DRF Serializers 和 Class-Based Views
+- FastAPI: 用于 WebSocket 实时通信
 - 遵循 PEP 8 代码风格
 - 使用类型注解
 
 ### API 设计
 - RESTful 风格
 - 认证使用 JWT (Bearer Token)
-- Token 刷新机制在 api.js 中实现
+- Token 刷新机制在前端 api/index.js 中实现
 - WebSocket 用于实时战斗和聊天
 
-### 状态管理 (Redux)
-- authSlice: 认证状态 (accessToken, refreshToken, user)
-- characterSlice: 角色数据
-- gameSlice: 游戏状态 (当前区域、任务进度等)
+### 状态管理 (Pinia)
+- user.js: 认证状态 (accessToken, refreshToken, user)
+- character.js: 角色数据
+- game.js: 游戏状态 (当前区域、任务进度等)
 
 ## 核心功能模块
 
 ### 认证系统 (auth)
-- 注册 POST /auth/register
-- 登录 POST /auth/login
-- Token 刷新 POST /auth/refresh
-- 获取用户信息 GET /auth/me
-- 忘记密码 POST /auth/forgot-password
-- 重置密码 POST /auth/reset-password
+- 注册 POST /api/auth/register
+- 登录 POST /api/auth/login
+- Token 刷新 POST /api/auth/refresh
+- 获取用户信息 GET /api/auth/me
 
 ### 角色系统 (characters)
-- 创建角色 POST /characters
-- 获取所有角色 GET /characters
-- 获取角色详情 GET /characters/{id}
-- 更新角色 PUT /characters/{id}
-- 更新装备 PUT /characters/{id}/equipment
-- 角色变形 POST /characters/{id}/transform
+- 创建角色 POST /api/characters
+- 获取所有角色 GET /api/characters
+- 获取角色详情 GET /api/characters/{id}
+- 更新角色 PUT /api/characters/{id}
+- 更新装备 PUT /api/characters/{id}/equipment
+- 角色变形 POST /api/characters/{id}/transform
 
-### 战斗系统 (battle)
-- 开始战斗 POST /battle/start
-- 攻击 POST /battle/{battleId}/attack
-- 使用技能 POST /battle/{battleId}/skill
-- 获取战斗结果 GET /battle/{battleId}/result
+### 战斗系统 (gameplay)
+- 开始战斗 POST /api/gameplay/battle/start
+- 攻击 POST /api/gameplay/battle/{id}/attack
+- 使用技能 POST /api/gameplay/battle/{id}/skill
+- 获取战斗结果 GET /api/gameplay/battle/{id}/result
 - WebSocket: /ws/battle/{battleId}
 
-### 任务系统 (tasks)
-- 获取任务列表 GET /tasks
-- 获取任务详情 GET /tasks/{id}
-- 接受任务 POST /tasks/{id}/accept
-- 更新进度 PUT /tasks/{id}/progress
-- 完成任务 POST /tasks/{id}/complete
+### 任务系统 (gameplay)
+- 获取任务列表 GET /api/gameplay/tasks
+- 获取任务详情 GET /api/gameplay/tasks/{id}
+- 接受任务 POST /api/gameplay/tasks/{id}/accept
+- 更新进度 PUT /api/gameplay/tasks/{id}/progress
+- 完成任务 POST /api/gameplay/tasks/{id}/complete
 
-### 地图系统 (map)
-- 获取区域列表 GET /map/areas
-- 获取区域详情 GET /map/areas/{id}
-- 探索区域 POST /map/areas/{id}/explore
+### 地图系统 (maps)
+- 获取区域列表 GET /api/maps/areas
+- 获取区域详情 GET /api/maps/areas/{id}
+- 探索区域 POST /api/maps/areas/{id}/explore
 
-### NPC 系统 (npc)
-- 获取 NPC 列表 GET /npc
-- 获取对话 GET /npc/{id}/dialogue
-- 响应对话 POST /npc/{id}/respond
+### NPC 系统 (dialogue)
+- 获取 NPC 列表 GET /api/dialogue/npcs
+- 获取对话 GET /api/dialogue/npcs/{id}/dialogue
+- 响应对话 POST /api/dialogue/npcs/{id}/respond
 
-### 奖励系统 (reward)
-- 获取奖励列表 GET /rewards
-- 领取奖励 POST /rewards/{id}/claim
-- 获取成就 GET /rewards/achievements
+### 奖励系统 (gameplay)
+- 获取奖励列表 GET /api/gameplay/rewards
+- 领取奖励 POST /api/gameplay/rewards/{id}/claim
+- 获取成就 GET /api/gameplay/achievements
 
-### 休息系统 (rest)
-- 开始休息 POST /rest/start
-- 结束休息 POST /rest/end
-- 获取离线收益 GET /rest/offline
+### 休息系统 (gameplay)
+- 开始休息 POST /api/gameplay/rest/start
+- 结束休息 POST /api/gameplay/rest/end
+- 获取离线收益 GET /api/gameplay/rest/offline
 
 ## 配置说明
 
 ### API 代理 (vite.config.js)
 - /api 代理到 http://localhost:8000
 - /ws 代理到 ws://localhost:8000 (WebSocket)
-- historyApiFallback 配置支持 React Router 单页应用路由
 
-### 认证 Token 处理 (api.js)
+### 认证 Token 处理 (api/index.js)
 - accessToken 存储在 localStorage
 - refreshToken 存储在 localStorage
-- 401 响应自动尝试刷新 token
-- 刷新失败则清除 token 并重定向到首页
-
-### 邮件服务配置
-- 使用 SMTP 服务发送邮件
-- 支持欢迎邮件和密码重置邮件
-- 需要在 .env 文件中配置 SMTP 相关参数
+- 401 响应自动清除 token 并重定向到登录页
 
 ## 注意事项
 
-1. 前端开发服务器运行在端口 3000，后端 FastAPI 运行在端口 8000
+1. 前端开发服务器运行在端口 3000，后端 Django 运行在端口 8000
 2. Vite proxy 配置确保开发时 API 请求正确转发
-3. maxRedirects: 0 防止 axios 自动重定向
-4. Django 主要处理数据库模型的 CRUD，FastAPI 处理业务逻辑和 WebSocket
-5. WebSocket 连接用于实时战斗和聊天功能
-6. 密码重置功能需要配置 SMTP 服务
-7. 所有敏感配置信息应存储在 backend/.env 文件中，不要提交到版本控制
+3. Django 处理所有 REST API 和数据库操作，FastAPI 仅处理 WebSocket
+4. WebSocket 连接用于实时战斗和聊天功能
+5. 所有敏感配置信息应存储在 backend/.env 文件中，不要提交到版本控制

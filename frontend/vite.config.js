@@ -1,8 +1,14 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  },
   server: {
     port: 3000,
     proxy: {
@@ -11,12 +17,9 @@ export default defineConfig({
         changeOrigin: true
       },
       '/ws': {
-        target: 'ws://localhost:8000',
+        target: 'ws://localhost:8001',
         ws: true
       }
-    },
-    historyApiFallback: {
-      index: '/index.html'
     }
   }
 })

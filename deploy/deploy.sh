@@ -21,7 +21,7 @@ mkdir -p "/var/run/campus_daze"
 
 echo "[2/7] 安装系统依赖..."
 apt-get update
-apt-get install -y python3 python3-venv python3-dev nginx redis-server supervisor mysql-server git curl nodejs npm
+apt-get install -y python3 python3-venv python3-dev nginx supervisor mysql-server git curl nodejs npm
 
 echo "[3/7] 创建Python虚拟环境..."
 python3 -m venv "$VENV_DIR"
