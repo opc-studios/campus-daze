@@ -1,337 +1,208 @@
-# Campus Daze (学术喵的奇幻之旅)
+# 同舟喵济 - 项目开发指南
 
 ## 项目概述
 
-回合制 RPG 游戏，前端使用 Vue 3 + Pinia，后端使用 Django REST Framework + FastAPI WebSocket。
+《同舟喵济》是一款以同济大学校园为背景的放置类 RPG 游戏。玩家扮演五只学术喵之一，通过挂机学习、探索章节地图、参与战斗等方式积累学分，最终完成学业。
+
+## 技术栈
+
+### 前端
+- **框架**: Vue 3 + TypeScript + Vite
+- **游戏引擎**: Phaser 3
+- **状态管理**: Pinia
+- **样式**: Tailwind CSS
+- **HTTP 客户端**: Axios
+- **测试**: Vitest
+
+### 后端
+- **框架**: FastAPI
+- **ORM**: SQLAlchemy 2.0
+- **数据库**: SQLite (开发) / MySQL 8.x (生产)
+- **认证**: JWT (python-jose)
+- **密码加密**: bcrypt (passlib)
+- **日志**: Loguru
+- **实时通信**: WebSocket
+- **测试**: pytest + pytest-asyncio
 
 ## 项目结构
 
 ```
 campus-daze/
-├── frontend/                 # Vue 3 前端
-│   ├── public/
-│   │   └── index.html
+├── backend/              # 后端服务
+│   ├── app/
+│   │   ├── api/         # API 路由 (auth, save, ws, event, health)
+│   │   ├── models/      # 数据库模型 (User, GameSave)
+│   │   ├── schemas/     # Pydantic 数据验证
+│   │   ├── services/    # 业务逻辑 (auth, save, event, reward, progress_validator)
+│   │   ├── utils/       # 工具函数 (security, errors)
+│   │   ├── config.py    # 配置管理
+│   │   ├── database.py  # 数据库连接
+│   │   └── main.py      # FastAPI 应用入口
+│   ├── tests/           # 后端测试
+│   └── requirements.txt
+│
+├── frontend/            # 前端应用
 │   ├── src/
-│   │   ├── modules/          # 业务模块
-│   │   │   ├── users/        # 用户模块
-│   │   │   │   └── views/
-│   │   │   │       ├── LoginPage.vue
-│   │   │   │       ├── RegisterPage.vue
-│   │   │   │       └── UserCenter.vue
-│   │   │   ├── characters/   # 角色模块
-│   │   │   │   └── views/
-│   │   │   │       └── CreateCharacter.vue
-│   │   │   ├── maps/         # 地图模块
-│   │   │   │   └── views/
-│   │   │   │       ├── MapPage.vue
-│   │   │   │       └── ExplorePage.vue
-│   │   │   ├── gameplay/     # 游戏玩法模块
-│   │   │   │   └── views/
-│   │   │   │       ├── BattlePage.vue
-│   │   │   │       ├── TasksPage.vue
-│   │   │   │       ├── RewardsPage.vue
-│   │   │   │       └── RestPage.vue
-│   │   │   ├── dialogue/     # 对话模块
-│   │   │   │   └── views/
-│   │   │   │       └── DialoguePage.vue
-│   │   │   ├── chapters/     # 章节模块
-│   │   │   │   └── views/
-│   │   │   │       └── ChaptersPage.vue
-│   │   │   ├── stages/       # 关卡模块
-│   │   │   │   └── views/
-│   │   │   │       └── StagesPage.vue
-│   │   │   └── saves/        # 存档模块
-│   │   │       └── views/
-│   │   │           └── SavesPage.vue
-│   │   ├── stores/           # Pinia 状态管理
-│   │   │   ├── user.js       # 用户状态
-│   │   │   ├── character.js  # 角色状态
-│   │   │   └── game.js       # 游戏状态
-│   │   ├── api/              # API 客户端
-│   │   │   └── index.js      # Axios 配置
-│   │   ├── router/           # 路由配置
-│   │   │   └── index.js      # Vue Router 配置
-│   │   ├── assets/           # 静态资源
-│   │   │   ├── sprites/      # 精灵图
-│   │   │   ├── tiles/        # 地图瓦片
-│   │   │   └── sounds/       # 音效
-│   │   ├── App.vue           # 根组件
-│   │   └── main.js           # 入口文件
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
-├── backend/
-│   ├── core/                 # Django 项目配置
-│   │   ├── settings/
-│   │   │   └── base.py       # 基础配置
-│   │   ├── urls.py           # 主路由
-│   │   ├── wsgi.py
-│   │   └── asgi.py
-│   ├── modules/              # 业务模块（Django Apps）
-│   │   ├── users/            # 用户模块
-│   │   │   ├── models.py     # User, Role, Permission
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   ├── characters/       # 角色模块
-│   │   │   ├── models.py     # Character, Equipment, Skill
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   ├── maps/             # 地图模块
-│   │   │   ├── models.py     # Area, MapTile, MapObject
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   ├── chapters/         # 章节模块
-│   │   │   ├── models.py     # Chapter, Scene, ChapterProgress
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   ├── gameplay/         # 游戏玩法模块
-│   │   │   ├── models.py     # Battle, Task, Reward, RestRecord
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   ├── dialogue/         # 对话模块
-│   │   │   ├── models.py     # NPC, Dialogue, NPCAffinity
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   ├── stages/           # 关卡模块
-│   │   │   ├── models.py     # Stage, Enemy, StageProgress
-│   │   │   ├── views.py
-│   │   │   ├── serializers.py
-│   │   │   └── urls.py
-│   │   └── saves/            # 存档模块
-│   │       ├── models.py     # SaveSlot, SaveData
-│   │       ├── views.py
-│   │       ├── serializers.py
-│   │       └── urls.py
-│   ├── common/               # 公共工具模块
-│   │   ├── auth/             # 认证工具
-│   │   │   └── jwt_handler.py
-│   │   └── database/         # 数据库工具
-│   │       └── fallback.py
-│   ├── api/                  # FastAPI 应用（WebSocket）
-│   │   ├── main.py           # FastAPI 入口
-│   │   ├── config.py         # 配置
-│   │   └── routers/          # WebSocket 路由
-│   │       ├── battle_ws.py  # 战斗 WebSocket
-│   │       └── chat_ws.py    # 聊天 WebSocket
-│   ├── manage.py             # Django 管理脚本
-│   └── requirements/         # 依赖配置
-│       └── base.txt
-├── deploy/                   # 部署配置
-│   ├── deploy.sh
-│   ├── nginx.conf
-│   ├── start.bat
-│   ├── stop.bat
-│   └── supervisord.conf
-├── doc/                      # 文档
-│   ├── PRD.md
-│   └── TECHNICAL_ARCHITECTURE.md
-├── .gitignore
-├── LICENSE
-└── README.md
+│   │   ├── api/         # API 调用封装
+│   │   ├── components/  # Vue 组件
+│   │   ├── composables/ # 组合式函数 (useWebSocket, useIdle, useOfflineReward)
+│   │   ├── game/        # Phaser 游戏逻辑
+│   │   │   ├── config/  # 游戏配置 JSON (角色、技能、怪物、地图、事件、物品)
+│   │   │   ├── scenes/  # Phaser 场景 (BootScene, MapExploreScene, CombatOverlayScene)
+│   │   │   ├── systems/ # 游戏系统 (MapFogSystem, MonsterAISystem, FormSwitchSystem)
+│   │   │   └── combat/  # 战斗系统 (simulator, formulas, skill-runner)
+│   │   ├── stores/      # Pinia 状态管理 (user, game)
+│   │   ├── views/       # 页面视图 (Login, Register, CharSelect, Home, Growth, Map, Inventory, Archive)
+│   │   └── style.css    # 全局样式
+│   ├── tests/           # 前端测试
+│   └── package.json
+│
+├── docker-compose.yml   # Docker 部署配置
+└── doc/                 # 项目文档
 ```
 
-## 常用命令
+## 开发命令
 
-### 启动项目（推荐使用脚本）
+### 后端开发
 
-**Windows：**
 ```bash
-# 启动项目（自动初始化数据库、启动后端和前端）
-deploy\start.bat
+cd backend
 
-# 停止项目
-deploy\stop.bat
+# 启动开发服务器 (SQLite)
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# 运行测试
+python -m pytest tests/ -v --tb=short -p no:playwright
+
+# 安装依赖
+pip install -r requirements.txt
 ```
 
-**Linux/macOS：**
-```bash
-# 启动项目（自动初始化数据库、启动后端）
-bash deploy/start.sh
+### 前端开发
 
-# 停止项目
-bash deploy/stop.sh
-```
-
-### 手动启动（开发调试用）
-
-**前端：**
 ```bash
 cd frontend
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 运行测试
+npm test
+
+# 类型检查
+npm run type-check
+
+# 安装依赖
 npm install
-npm run dev      # 启动开发服务器 (http://localhost:3000)
-npm run build    # 生产构建
-npm run preview  # 预览构建结果
 ```
 
-**后端：**
-```bash
-cd backend
-pip install -r requirements/base.txt
-python manage.py runserver 0.0.0.0:8000  # Django 开发服务器
-```
+### 访问地址
 
-### 数据库（脚本已自动处理）
-
-```bash
-cd backend
-python manage.py makemigrations  # 生成迁移文件
-python manage.py migrate         # 执行迁移
-python manage.py createsuperuser # 创建超级用户
-```
-
-## 测试用户
-
-默认测试账号：
-- 用户名：test123
-- 密码：123456
-
-## 技术栈
-
-### 前端
-- Vue 3.4
-- Pinia 2.1
-- Vue Router 4.2
-- Axios 1.6
-- Tailwind CSS 3.4
-- PostCSS 8.4
-- Vite 5.0
-- @vitejs/plugin-vue 5.0
-- Phaser 3.80 (游戏引擎)
-- Three.js 0.170
-
-### 后端
-- Django 5.0
-- Django REST Framework 3.14
-- FastAPI 0.110
-- Uvicorn 0.28
-- Pydantic 2.5
-- Pydantic Settings 2.1
-- WebSockets 12.0
-- PyMySQL 1.1
-- Python JOSE 3.3 (JWT)
-- Passlib 1.7 (密码哈希)
-- Python Multipart 0.0.6
-- Aiofiles 23.2.1
-
-## 环境配置
-
-在 `backend/.env` 文件中配置以下环境变量：
-
-```env
-# JWT 配置
-JWT_SECRET_KEY=your-secret-key-here
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_LIFETIME_MINUTES=60
-JWT_REFRESH_TOKEN_LIFETIME_DAYS=7
-
-# 数据库配置
-DB_USER=root
-DB_PASSWORD=your-db-password
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=campus_daze
-
-# 前端 URL
-FRONTEND_URL=http://localhost:3000
-```
-
-## 代码规范
-
-### 前端 (Vue 3)
-- 使用 Composition API 和 `<script setup>` 语法
-- 使用 Pinia 进行状态管理
-- 组件使用 `.vue` 扩展名
-- 使用 async/await 处理异步操作
-- 使用 api 实例进行 API 调用
-
-### 后端 (Python)
-- Django: 使用 DRF Serializers 和 Class-Based Views
-- FastAPI: 用于 WebSocket 实时通信
-- 遵循 PEP 8 代码风格
-- 使用类型注解
-
-### API 设计
-- RESTful 风格
-- 认证使用 JWT (Bearer Token)
-- Token 刷新机制在前端 api/index.js 中实现
-- WebSocket 用于实时战斗和聊天
-
-### 状态管理 (Pinia)
-- user.js: 认证状态 (accessToken, refreshToken, user)
-- character.js: 角色数据
-- game.js: 游戏状态 (当前区域、任务进度等)
+- 前端开发服务器: http://localhost:5174 (或 5173)
+- 后端 API: http://localhost:8000
+- API 文档: http://localhost:8000/docs
 
 ## 核心功能模块
 
-### 认证系统 (auth)
-- 注册 POST /api/auth/register
-- 登录 POST /api/auth/login
-- Token 刷新 POST /api/auth/refresh
-- 获取用户信息 GET /api/auth/me
+### 1. 认证系统
+- 邮箱密码注册登录
+- JWT Token 认证 (access_token + refresh_token)
+- WebSocket 连接认证
 
-### 角色系统 (characters)
-- 创建角色 POST /api/characters
-- 获取所有角色 GET /api/characters
-- 获取角色详情 GET /api/characters/{id}
-- 更新角色 PUT /api/characters/{id}
-- 更新装备 PUT /api/characters/{id}/equipment
-- 角色变形 POST /api/characters/{id}/transform
+### 2. 存档系统
+- 云存档读写 (GET/PUT /api/save)
+- 乐观锁版本控制 (state_version)
+- 完整 GameState 持久化
 
-### 战斗系统 (gameplay)
-- 开始战斗 POST /api/gameplay/battle/start
-- 攻击 POST /api/gameplay/battle/{id}/attack
-- 使用技能 POST /api/gameplay/battle/{id}/skill
-- 获取战斗结果 GET /api/gameplay/battle/{id}/result
-- WebSocket: /ws/battle/{battleId}
+### 3. 战斗系统
+- 回合制自动战斗
+- 战斗公式: 伤害、暴击、闪避、命中
+- 技能系统: 普攻 + 2 主动技能
+- 战斗速度控制: 1x / 2x / 跳过
 
-### 任务系统 (gameplay)
-- 获取任务列表 GET /api/gameplay/tasks
-- 获取任务详情 GET /api/gameplay/tasks/{id}
-- 接受任务 POST /api/gameplay/tasks/{id}/accept
-- 更新进度 PUT /api/gameplay/tasks/{id}/progress
-- 完成任务 POST /api/gameplay/tasks/{id}/complete
+### 4. 地图探索
+- 章节地图节点系统
+- 迷雾系统 (MapFogSystem)
+- 怪物 AI (巡逻、警戒、追击、脱战)
+- 形态切换 (人形态/猫形态)
 
-### 地图系统 (maps)
-- 获取区域列表 GET /api/maps/areas
-- 获取区域详情 GET /api/maps/areas/{id}
-- 探索区域 POST /api/maps/areas/{id}/explore
+### 5. 挂机系统
+- 学习/实习任务
+- 在线/离线收益计算
+- 离线收益上限 8 小时
 
-### NPC 系统 (dialogue)
-- 获取 NPC 列表 GET /api/dialogue/npcs
-- 获取对话 GET /api/dialogue/npcs/{id}/dialogue
-- 响应对话 POST /api/dialogue/npcs/{id}/respond
+### 6. 实时通信
+- WebSocket 推送随机事件和奖励通知
+- 自动重连机制 (指数退避)
+- HTTP API 回退保障
 
-### 奖励系统 (gameplay)
-- 获取奖励列表 GET /api/gameplay/rewards
-- 领取奖励 POST /api/gameplay/rewards/{id}/claim
-- 获取成就 GET /api/gameplay/achievements
+## 重要约束
 
-### 休息系统 (gameplay)
-- 开始休息 POST /api/gameplay/rest/start
-- 结束休息 POST /api/gameplay/rest/end
-- 获取离线收益 GET /api/gameplay/rest/offline
+### API 开发
+- API 参数必须前后端一致
+- 使用 Pydantic Schema 进行数据验证
+- 错误响应格式: `{ error_code, message, details? }`
 
-## 配置说明
+### 数据处理
+- 数据加载使用 `res || []` 防止空响应错误
+- Axios 响应直接使用 `res`，不要假设 `res.data` 层
 
-### API 代理 (vite.config.js)
-- /api 代理到 http://localhost:8000
-- /ws 代理到 ws://localhost:8000 (WebSocket)
+### WebSocket
+- 消息格式: `{ type, data }`
+- 消息类型: ping, heartbeat, random_event, reward, system
+- 连接断开自动重连 (指数退避)
+- 关键奖励通知要有 HTTP 回退
 
-### 认证 Token 处理 (api/index.js)
-- accessToken 存储在 localStorage
-- refreshToken 存储在 localStorage
-- 401 响应自动清除 token 并重定向到登录页
+### UI 样式
+- 使用统一的 CSS 类:
+  - `.game-card-neon` - 游戏卡片
+  - `.floating-particles` - 浮动粒子效果
+  - `.exp-bar` - 经验条
+  - `.stat-panel` - 属性面板
+  - `.game-button` - 游戏按钮
 
-## 注意事项
+### 数据库
+- 本地开发使用 SQLite
+- 生产环境使用 MySQL 8.x
+- 数据库表自动创建 (Base.metadata.create_all)
 
-1. 前端开发服务器运行在端口 3000，后端 Django 运行在端口 8000
-2. Vite proxy 配置确保开发时 API 请求正确转发
-3. Django 处理所有 REST API 和数据库操作，FastAPI 仅处理 WebSocket
-4. WebSocket 连接用于实时战斗和聊天功能
-5. 所有敏感配置信息应存储在 backend/.env 文件中，不要提交到版本控制
+## CORS 配置
+
+后端 CORS 允许的前端源:
+- http://localhost:5173
+- http://localhost:5174
+- http://localhost:3000
+
+## 测试覆盖
+
+### 后端测试
+- 认证功能 (注册、登录)
+- 存档读写
+- WebSocket 连接管理
+- 进度验证器
+
+### 前端测试
+- 战斗公式计算
+- 战斗模拟器
+- 游戏状态管理
+
+## 部署
+
+使用 Docker Compose 部署:
+
+```bash
+docker-compose up -d
+```
+
+服务:
+- MySQL 8.0 (生产环境)
+- 后端 API (FastAPI)
+- 前端 (Nginx 静态托管)
+
+## 文档参考
+
+- 技术设计: `doc/学术喵_技术设计与开发方案.md`
+- 游戏设计: `doc/tongji_academic_cat_gdd_初版.md`

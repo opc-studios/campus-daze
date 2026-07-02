@@ -1,0 +1,36 @@
+[
+  { "skillId": "lina_basic", "roleId": "lina", "name": "基础攻击", "type": "basic", "cooldown": 0, "multiplier": 1.0, "effect": null, "unavoidable": false, "unlockCondition": null },
+  { "skillId": "lina_s1", "roleId": "lina", "name": "学风冲击", "type": "active", "cooldown": 3, "multiplier": 1.5, "effect": null, "unavoidable": false, "unlockCondition": "chapter_1" },
+  { "skillId": "lina_s2", "roleId": "lina", "name": "精灵召唤", "type": "active", "cooldown": 5, "multiplier": 0.8, "effect": { "type": "summon", "duration": 3, "damage": 20 }, "unavoidable": false, "unlockCondition": "credits_8" },
+  { "skillId": "lina_s3", "roleId": "lina", "name": "知识风暴", "type": "active", "cooldown": 8, "multiplier": 2.5, "effect": null, "unavoidable": false, "unlockCondition": "chapter_1_cleared" },
+  { "skillId": "lina_s4", "roleId": "lina", "name": "学术共鸣", "type": "active", "cooldown": 10, "multiplier": 3.0, "effect": { "type": "buff", "stat": "atk", "value": 0.2, "duration": 3 }, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
+  { "skillId": "lina_s5", "roleId": "lina", "name": "智慧之光", "type": "active", "cooldown": 12, "multiplier": 4.0, "effect": null, "unavoidable": false, "unlockCondition": "chapter_3_cleared" },
+
+  { "skillId": "ayu_basic", "roleId": "ayu", "name": "基础攻击", "type": "basic", "cooldown": 0, "multiplier": 1.0, "effect": null, "unavoidable": false, "unlockCondition": null },
+  { "skillId": "ayu_s1", "roleId": "ayu", "name": "猛击", "type": "active", "cooldown": 3, "multiplier": 1.8, "effect": null, "unavoidable": false, "unlockCondition": "chapter_1" },
+  { "skillId": "ayu_s2", "roleId": "ayu", "name": "愈战愈勇", "type": "active", "cooldown": 5, "multiplier": 1.2, "effect": { "type": "buff", "stat": "atk", "value": 0.15, "duration": 99, "stacks": true }, "unavoidable": false, "unlockCondition": "credits_8" },
+  { "skillId": "ayu_s3", "roleId": "ayu", "name": "连击风暴", "type": "active", "cooldown": 8, "multiplier": 0.8, "effect": { "type": "multi_hit", "hits": 3 }, "unavoidable": false, "unlockCondition": "chapter_1_cleared" },
+  { "skillId": "ayu_s4", "roleId": "ayu", "name": "热血冲锋", "type": "active", "cooldown": 10, "multiplier": 3.5, "effect": null, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
+  { "skillId": "ayu_s5", "roleId": "ayu", "name": "不屈意志", "type": "active", "cooldown": 12, "multiplier": 2.0, "effect": { "type": "buff", "stat": "def", "value": 0.5, "duration": 3 }, "unavoidable": false, "unlockCondition": "chapter_3_cleared" },
+
+  { "skillId": "zhixia_basic", "roleId": "zhixia", "name": "基础攻击", "type": "basic", "cooldown": 0, "multiplier": 1.0, "effect": null, "unavoidable": false, "unlockCondition": null },
+  { "skillId": "zhixia_s1", "roleId": "zhixia", "name": "精准打击", "type": "active", "cooldown": 3, "multiplier": 1.6, "effect": { "type": "buff", "stat": "critRate", "value": 0.1, "duration": 2 }, "unavoidable": false, "unlockCondition": "chapter_1" },
+  { "skillId": "zhixia_s2", "roleId": "zhixia", "name": "学术专注", "type": "active", "cooldown": 5, "multiplier": 2.0, "effect": { "type": "buff", "stat": "critRate", "value": 0.15, "duration": 99 }, "unavoidable": false, "unlockCondition": "credits_8" },
+  { "skillId": "zhixia_s3", "roleId": "zhixia", "name": "致命一击", "type": "active", "cooldown": 8, "multiplier": 3.0, "effect": null, "unavoidable": true, "unlockCondition": "chapter_1_cleared" },
+  { "skillId": "zhixia_s4", "roleId": "zhixia", "name": "洞察弱点", "type": "active", "cooldown": 10, "multiplier": 2.5, "effect": { "type": "debuff", "stat": "def", "value": -0.3, "duration": 3 }, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
+  { "skillId": "zhixia_s5", "roleId": "zhixia", "name": "一击必杀", "type": "active", "cooldown": 12, "multiplier": 5.0, "effect": null, "unavoidable": true, "unlockCondition": "chapter_3_cleared" },
+
+  { "skillId": "jiangxun_basic", "roleId": "jiangxun", "name": "基础攻击", "type": "basic", "cooldown": 0, "multiplier": 1.0, "effect": null, "unavoidable": false, "unlockCondition": null },
+  { "skillId": "jiangxun_s1", "roleId": "jiangxun", "name": "穿刺攻击", "type": "active", "cooldown": 3, "multiplier": 1.4, "effect": { "type": "armor_pen", "value": 0.5 }, "unavoidable": false, "unlockCondition": "chapter_1" },
+  { "skillId": "jiangxun_s2", "roleId": "jiangxun", "name": "影步", "type": "active", "cooldown": 5, "multiplier": 1.0, "effect": { "type": "buff", "stat": "evasionRate", "value": 0.2, "duration": 3 }, "unavoidable": false, "unlockCondition": "credits_8" },
+  { "skillId": "jiangxun_s3", "roleId": "jiangxun", "name": "穿甲弹", "type": "active", "cooldown": 8, "multiplier": 2.5, "effect": { "type": "armor_pen", "value": 1.0 }, "unavoidable": false, "unlockCondition": "chapter_1_cleared" },
+  { "skillId": "jiangxun_s4", "roleId": "jiangxun", "name": "疾风斩", "type": "active", "cooldown": 10, "multiplier": 2.0, "effect": { "type": "multi_hit", "hits": 2 }, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
+  { "skillId": "jiangxun_s5", "roleId": "jiangxun", "name": "致命穿刺", "type": "active", "cooldown": 12, "multiplier": 4.0, "effect": { "type": "armor_pen", "value": 1.0 }, "unavoidable": true, "unlockCondition": "chapter_3_cleared" },
+
+  { "skillId": "laodeng_basic", "roleId": "laodeng", "name": "基础攻击", "type": "basic", "cooldown": 0, "multiplier": 1.0, "effect": null, "unavoidable": false, "unlockCondition": null },
+  { "skillId": "laodeng_s1", "roleId": "laodeng", "name": "重击", "type": "active", "cooldown": 3, "multiplier": 1.3, "effect": null, "unavoidable": false, "unlockCondition": "chapter_1" },
+  { "skillId": "laodeng_s2", "roleId": "laodeng", "name": "混凝土反震", "type": "active", "cooldown": 5, "multiplier": 0.5, "effect": { "type": "reflect", "value": 0.3, "duration": 3 }, "unavoidable": false, "unlockCondition": "credits_8" },
+  { "skillId": "laodeng_s3", "roleId": "laodeng", "name": "铁壁", "type": "active", "cooldown": 8, "multiplier": 0, "effect": { "type": "shield", "value": 50 }, "unavoidable": false, "unlockCondition": "chapter_1_cleared" },
+  { "skillId": "laodeng_s4", "roleId": "laodeng", "name": "地震波", "type": "active", "cooldown": 10, "multiplier": 2.0, "effect": null, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
+  { "skillId": "laodeng_s5", "roleId": "laodeng", "name": "不动如山", "type": "active", "cooldown": 12, "multiplier": 0, "effect": { "type": "buff", "stat": "def", "value": 1.0, "duration": 5 }, "unavoidable": false, "unlockCondition": "chapter_3_cleared" }
+]

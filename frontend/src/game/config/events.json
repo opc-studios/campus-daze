@@ -1,0 +1,110 @@
+[
+  {
+    "eventId": "evt_mystery_book",
+    "name": "神秘古籍",
+    "description": "你在书架深处发现了一本泛黄的古籍，封面写着「同济秘史」。",
+    "trigger": "map",
+    "nodeId": "E-1",
+    "options": [
+      { "text": "仔细阅读", "rewards": [{ "type": "exp", "amount": 30 }, { "type": "credits", "amount": 2 }], "consequence": null },
+      { "text": "交给图书管理员", "rewards": [{ "type": "coins", "amount": 50 }], "consequence": null },
+      { "text": "偷偷带走", "rewards": [{ "type": "archive", "amount": 1, "itemId": "archive_secret_history" }], "consequence": "lose_5_credits" }
+    ]
+  },
+  {
+    "eventId": "evt_idle_cat",
+    "name": "校园流浪猫",
+    "description": "一只可爱的猫咪蹭了蹭你的腿。",
+    "trigger": "idle",
+    "options": [
+      { "text": "喂食", "rewards": [{ "type": "exp", "amount": 10 }], "consequence": "lose_5_coins" },
+      { "text": "抚摸", "rewards": [{ "type": "exp", "amount": 5 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_idle_tutor",
+    "name": "学长辅导",
+    "description": "一位热心的学长主动提出帮你解答疑惑。",
+    "trigger": "idle",
+    "options": [
+      { "text": "接受辅导", "rewards": [{ "type": "exp", "amount": 25 }], "consequence": null },
+      { "text": "自己研究", "rewards": [{ "type": "exp", "amount": 15 }, { "type": "credits", "amount": 1 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_idle_coffee",
+    "name": "免费咖啡",
+    "description": "咖啡店今天做活动，免费赠送一杯咖啡。",
+    "trigger": "idle",
+    "options": [
+      { "text": "来一杯美式", "rewards": [{ "type": "buff", "stat": "exp_rate", "value": 1.2, "duration": 300 }], "consequence": null },
+      { "text": "打包带走", "rewards": [{ "type": "item", "amount": 1, "itemId": "coffee_boost" }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_idle_lab",
+    "name": "实验室邀请",
+    "description": "教授邀请你参与一个研究项目。",
+    "trigger": "idle",
+    "options": [
+      { "text": "积极参与", "rewards": [{ "type": "exp", "amount": 20 }, { "type": "credits", "amount": 2 }], "consequence": null },
+      { "text": "婉拒", "rewards": [], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_idle_competition",
+    "name": "学术竞赛",
+    "description": "校园内正在举办学术竞赛，你被邀请参加。",
+    "trigger": "idle",
+    "options": [
+      { "text": "全力以赴", "rewards": [{ "type": "credits", "amount": 5 }, { "type": "coins", "amount": 30 }], "consequence": "risk_fail" },
+      { "text": "重在参与", "rewards": [{ "type": "credits", "amount": 2 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_idle_club",
+    "name": "社团招新",
+    "description": "多个社团正在招新，你对其中一个很感兴趣。",
+    "trigger": "idle",
+    "options": [
+      { "text": "加入学术社", "rewards": [{ "type": "exp", "amount": 15 }, { "type": "credits", "amount": 1 }], "consequence": null },
+      { "text": "加入运动社", "rewards": [{ "type": "exp", "amount": 10 }, { "type": "buff", "stat": "resilience", "value": 2, "duration": 600 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_lab_record",
+    "name": "实验记录",
+    "description": "你在实验台上发现了一本详细的实验记录，记载着重要的研究成果。",
+    "trigger": "map",
+    "nodeId": "E-2",
+    "options": [
+      { "text": "仔细研读", "rewards": [{ "type": "exp", "amount": 50 }, { "type": "credits", "amount": 3 }], "consequence": null },
+      { "text": "交给导师", "rewards": [{ "type": "coins", "amount": 80 }], "consequence": null },
+      { "text": "拍照留存", "rewards": [{ "type": "exp", "amount": 25 }, { "type": "item", "amount": 1, "itemId": "scroll_experiment" }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_artifact",
+    "name": "神秘文物",
+    "description": "展柜中一件古老的文物散发着神秘的光芒，似乎在诉说着什么。",
+    "trigger": "map",
+    "nodeId": "E-3",
+    "options": [
+      { "text": "触摸文物", "rewards": [{ "type": "exp", "amount": 80 }, { "type": "credits", "amount": 5 }], "consequence": "risk_damage" },
+      { "text": "记录研究", "rewards": [{ "type": "exp", "amount": 40 }, { "type": "item", "amount": 1, "itemId": "scroll_history" }], "consequence": null },
+      { "text": "报告管理员", "rewards": [{ "type": "coins", "amount": 100 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_senior_advice",
+    "name": "学长建议",
+    "description": "一位刚通过答辩的学长分享了宝贵的经验。",
+    "trigger": "map",
+    "nodeId": "E-4",
+    "options": [
+      { "text": "认真请教", "rewards": [{ "type": "exp", "amount": 100 }, { "type": "credits", "amount": 8 }], "consequence": null },
+      { "text": "交换笔记", "rewards": [{ "type": "exp", "amount": 60 }, { "type": "item", "amount": 1, "itemId": "scroll_final" }], "consequence": null },
+      { "text": "礼貌告别", "rewards": [{ "type": "exp", "amount": 30 }], "consequence": null }
+    ]
+  }
+]

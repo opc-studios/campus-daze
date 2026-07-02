@@ -1,0 +1,10 @@
+[
+  { "archiveId": "archive_founding", "chapter": 1, "title": "1907 德文医学堂", "description": "同济大学的源头——1907 年德国医生埃里希·宝隆创建的德文医学堂。", "unlockCondition": "chapter_1_event" },
+  { "archiveId": "archive_naming", "chapter": 1, "title": "1923 定名同济", "description": "1923 年学校正式定名为同济大学，'同济'取自'同舟共济'之意。", "unlockCondition": "chapter_1_clear" },
+  { "archive_id": "archive_lizhuang", "chapter": 2, "title": "1940 李庄办学", "description": "抗战时期，同济大学内迁至四川李庄，在艰苦环境中坚持办学。", "unlockCondition": "chapter_2_event" },
+  { "archiveId": "archive_science", "chapter": 2, "title": "科学先驱", "description": "同济培养了一大批科学先驱，为国家发展做出重要贡献。", "unlockCondition": "chapter_2_clear" },
+  { "archiveId": "archive_reform", "chapter": 3, "title": "改革开放", "description": "改革开放后，同济大学迎来新发展，成为全国重点大学。", "unlockCondition": "chapter_3_event" },
+  { "archiveId": "archive_modern", "chapter": 3, "title": "现代同济", "description": "新时代的同济大学，在工程、科学、医学等领域持续领先。", "unlockCondition": "chapter_3_clear" },
+  { "archiveId": "archive_secret_history", "chapter": 4, "title": "同舟共济", "description": "同济精神的核心——同舟共济，代代相传。", "unlockCondition": "chapter_4_special" },
+  { "archiveId": "archive_complete", "chapter": 4, "title": "完整校史", "description": "你已收集全部校史碎片，拼凑出同济大学的完整历史画卷。", "unlockCondition": "all_archives" }
+]

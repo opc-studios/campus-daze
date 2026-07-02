@@ -1,0 +1,7 @@
+[
+  { "chapterId": 0, "name": "序章：初入同济", "mapId": "ch0_map1", "creditMilestone": 0, "unlockCondition": null, "bossId": null, "description": "欢迎来到同济大学" },
+  { "chapterId": 1, "name": "第一章：图书馆迷踪", "mapId": "ch1_map1", "creditMilestone": 20, "unlockCondition": null, "bossId": "boss_ai_prof", "description": "在图书馆中寻找真相" },
+  { "chapterId": 2, "name": "第二章：实验室危机", "mapId": "ch2_map1", "creditMilestone": 45, "unlockCondition": "chapter_1_cleared", "bossId": "boss_lab_beast", "description": "实验室里的危险实验" },
+  { "chapterId": 3, "name": "第三章：校史馆秘密", "mapId": "ch3_map1", "creditMilestone": 80, "unlockCondition": "chapter_2_cleared", "bossId": "boss_history_guard", "description": "揭开同济百年校史" },
+  { "chapterId": 4, "name": "终章：毕业答辩", "mapId": "ch4_map1", "creditMilestone": 120, "unlockCondition": "chapter_3_cleared", "bossId": "boss_final", "description": "最终的毕业考验" }
+]

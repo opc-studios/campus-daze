@@ -1,0 +1,18 @@
+[
+  { "itemId": "potion_exp", "name": "经验药水", "description": "使用后获得 50 EXP", "category": "consumable", "effect": { "type": "exp", "amount": 50 }, "source": "map_resource" },
+  { "itemId": "scroll_knowledge", "name": "知识卷轴", "description": "使用后获得 3 学分", "category": "consumable", "effect": { "type": "credits", "amount": 3 }, "source": "map_resource" },
+  { "itemId": "potion_practice", "name": "实践药水", "description": "使用后获得 80 EXP", "category": "consumable", "effect": { "type": "exp", "amount": 80 }, "source": "map_resource" },
+  { "itemId": "scroll_experiment", "name": "实验卷轴", "description": "使用后获得 5 学分", "category": "consumable", "effect": { "type": "credits", "amount": 5 }, "source": "map_resource" },
+  { "itemId": "potion_insight", "name": "洞察药水", "description": "使用后获得 120 EXP", "category": "consumable", "effect": { "type": "exp", "amount": 120 }, "source": "map_resource" },
+  { "itemId": "scroll_history", "name": "历史卷轴", "description": "使用后获得 8 学分", "category": "consumable", "effect": { "type": "credits", "amount": 8 }, "source": "map_resource" },
+  { "itemId": "potion_resilience", "name": "韧性药水", "description": "使用后获得 150 EXP", "category": "consumable", "effect": { "type": "exp", "amount": 150 }, "source": "map_resource" },
+  { "itemId": "scroll_final", "name": "终极卷轴", "description": "使用后获得 10 学分", "category": "consumable", "effect": { "type": "credits", "amount": 10 }, "source": "map_resource" },
+  { "itemId": "coffee_boost", "name": "提神咖啡", "description": "EXP 获取速率 +20%，持续 5 分钟", "category": "consumable", "effect": { "type": "buff", "stat": "exp_rate", "value": 1.2, "duration": 300 }, "source": "event" },
+  { "itemId": "archive_secret_history", "name": "同济秘史", "description": "记载着不为人知的校史秘密", "category": "souvenir", "effect": null, "source": "event" },
+  { "itemId": "study_headphone", "name": "降噪耳机", "description": "学习时佩戴，EXP +8%", "category": "tool", "slot": "study", "effect": { "type": "idle_boost", "stat": "exp_rate", "value": 1.08 }, "source": "shop" },
+  { "itemId": "intern_badge", "name": "实习胸牌", "description": "实习时佩戴，校园币 +8%", "category": "tool", "slot": "intern", "effect": { "type": "idle_boost", "stat": "coin_rate", "value": 1.08 }, "source": "shop" },
+  { "itemId": "explore_compass", "name": "探索罗盘", "description": "探索时佩戴，揭示范围 +20%", "category": "tool", "slot": "explore", "effect": { "type": "reveal_boost", "value": 1.2 }, "source": "shop" },
+  { "itemId": "lucky_charm", "name": "幸运符", "description": "暴击率 +5%", "category": "souvenir", "effect": { "type": "buff", "stat": "critRate", "value": 0.05 }, "source": "event" },
+  { "itemId": "energy_drink", "name": "能量饮料", "description": "立即恢复 30 HP", "category": "consumable", "effect": { "type": "heal", "amount": 30 }, "source": "shop" },
+  { "itemId": "shield_scroll", "name": "护盾卷轴", "description": "下次战斗获得 +50 护盾", "category": "consumable", "effect": { "type": "shield", "amount": 50 }, "source": "event" }
+]

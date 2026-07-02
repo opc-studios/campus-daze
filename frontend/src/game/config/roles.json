@@ -1,0 +1,57 @@
+[
+  {
+    "roleId": "lina",
+    "name": "莉娜",
+    "title": "学风精灵",
+    "combatRole": "summon_spirit",
+    "mainAttr": "knowledge",
+    "baseAttrs": { "knowledge": 8, "practice": 5, "insight": 6, "resilience": 4 },
+    "combatStats": { "critRate": 0.05, "critDamage": 1.5, "evasionRate": 0.05, "accuracyRate": 0.95 },
+    "description": "温柔而坚定的学术新星，擅长召唤精灵协战",
+    "quote": "知识是最强大的魔法"
+  },
+  {
+    "roleId": "ayu",
+    "name": "阿宇",
+    "title": "愈战愈勇",
+    "combatRole": "dps_strike",
+    "mainAttr": "practice",
+    "baseAttrs": { "knowledge": 4, "practice": 8, "insight": 5, "resilience": 6 },
+    "combatStats": { "critRate": 0.08, "critDamage": 1.6, "evasionRate": 0.05, "accuracyRate": 0.95 },
+    "description": "热血少年，越战越勇，连击伤害递增",
+    "quote": "战斗让我更强大"
+  },
+  {
+    "roleId": "zhixia",
+    "name": "知夏",
+    "title": "学术专注",
+    "combatRole": "dps_burst",
+    "mainAttr": "insight",
+    "baseAttrs": { "knowledge": 6, "practice": 4, "insight": 8, "resilience": 5 },
+    "combatStats": { "critRate": 0.15, "critDamage": 2.0, "evasionRate": 0.05, "accuracyRate": 0.95 },
+    "description": "冷静理性，暴击率极高，一击必杀",
+    "quote": "专注是成功的钥匙"
+  },
+  {
+    "roleId": "jiangxun",
+    "name": "江寻",
+    "title": "穿透打击",
+    "combatRole": "dps_aoe",
+    "mainAttr": "insight",
+    "baseAttrs": { "knowledge": 5, "practice": 6, "insight": 8, "resilience": 4 },
+    "combatStats": { "critRate": 0.08, "critDamage": 1.5, "evasionRate": 0.10, "accuracyRate": 0.95 },
+    "description": "敏捷刺客，对高防敌人造成额外伤害",
+    "quote": "没有我突破不了的防御"
+  },
+  {
+    "roleId": "laodeng",
+    "name": "老登",
+    "title": "混凝土反震",
+    "combatRole": "tank_heavy",
+    "mainAttr": "resilience",
+    "baseAttrs": { "knowledge": 5, "practice": 6, "insight": 4, "resilience": 8 },
+    "combatStats": { "critRate": 0.05, "critDamage": 1.5, "evasionRate": 0.03, "accuracyRate": 0.95 },
+    "description": "坚韧坦克，反弹伤害，越打越硬",
+    "quote": "来吧，让我看看你的实力"
+  }
+]
