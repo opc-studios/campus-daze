@@ -1,15 +1,31 @@
+# Campus Daze Backend Dependencies
+# FastAPI + SQLAlchemy 2.0 + MySQL 8.x
+
+# Web framework
 fastapi==0.110.0
-uvicorn[standard]==0.27.1
-sqlalchemy[asyncio]==2.0.27
+uvicorn[standard]==0.28.0
+
+# ORM
+sqlalchemy[asyncio]==2.0.29
 aiomysql==0.2.0
-alembic==1.13.1
-pydantic==2.6.1
+pymysql==1.1.0
+
+# Pydantic
+pydantic==2.5.3
 pydantic-settings==2.1.0
+email-validator==2.0.0
+
+# Security
 python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.9
-loguru==0.7.2
+bcrypt==4.1.2
+python-multipart==0.0.6
+
+# Utils
+python-dotenv==1.0.1
+aiofiles==23.2.1
+
+# Redis (P1 phase)
+redis==5.0.3
+
+# WebSocket (P1 phase)
 websockets==12.0
-httpx==0.26.0
-pytest==8.0.0
-pytest-asyncio==0.23.5
