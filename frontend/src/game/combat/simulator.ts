@@ -1,10 +1,22 @@
 import type { CombatEntity, ActiveSkill, CombatState, CombatResult } from './types'
-import { executeSkill, tickBuffs } from './skill-runner'
+import { executeSkill, tickBuffs, applyReflect } from './skill-runner'
 import { calcMaxHp, calcAttack, calcDefense, calcActionInterval } from './formulas'
+
+interface BossPhase {
+  hpThreshold: number
+  atkMultiplier?: number
+  defMultiplier?: number
+  atkBonus?: number
+  defBonus?: number
+  skillIndex?: number
+  name?: string
+}
 
 export class CombatSimulator {
   private state: CombatState
   private speed: 1 | 2 = 1
+  private bossPhases: BossPhase[] = []
+  private currentPhaseIndex = 0
 
   constructor(
     playerState: {
@@ -14,6 +26,7 @@ export class CombatSimulator {
       combatStats: { critRate: number; critDamage: number; evasionRate: number; accuracyRate: number }
       combatRole: string
       mainAttr: string
+      initialShield?: number
     },
     enemyConfig: {
       monsterId: string
@@ -24,6 +37,7 @@ export class CombatSimulator {
       actionInterval: number
       evasionRate: number
       skills: string[]
+      phases?: BossPhase[]
     },
     equippedSkills: ActiveSkill[]
   ) {
@@ -40,7 +54,7 @@ export class CombatSimulator {
       currentActionGauge: 0,
       skills: equippedSkills,
       buffs: [],
-      shield: 0,
+      shield: playerState.initialShield || 0,
       evasionRate: playerState.combatStats.evasionRate,
       accuracyRate: playerState.combatStats.accuracyRate,
       critRate: playerState.combatStats.critRate,
@@ -77,6 +91,8 @@ export class CombatSimulator {
       isPlayer: false
     }
 
+    this.bossPhases = enemyConfig.phases || []
+
     this.state = {
       player,
       enemy,
@@ -100,6 +116,8 @@ export class CombatSimulator {
 
     const effectiveDelta = deltaTime * this.speed
 
+    this.checkBossPhase()
+
     this.state.player.currentActionGauge += effectiveDelta
     this.state.enemy.currentActionGauge += effectiveDelta
 
@@ -121,17 +139,80 @@ export class CombatSimulator {
       }
     })
 
+    this.state.summons = this.state.summons.filter(summon => {
+      const ttlBuff = summon.buffs.find(b => b.stat === 'summon_ttl')
+      if (!ttlBuff) return true
+      ttlBuff.remainingDuration--
+      return ttlBuff.remainingDuration > 0 && summon.hp > 0
+    })
+
     tickBuffs(this.state.player)
     tickBuffs(this.state.enemy)
 
     this.checkCombatEnd()
   }
 
+  private checkBossPhase() {
+    if (this.bossPhases.length === 0) return
+    const hpPercent = this.state.enemy.hp / this.state.enemy.maxHp
+
+    for (let i = this.currentPhaseIndex + 1; i < this.bossPhases.length; i++) {
+      if (hpPercent <= this.bossPhases[i].hpThreshold) {
+        const prevPhase = this.bossPhases[this.currentPhaseIndex]
+        const newPhase = this.bossPhases[i]
+        this.currentPhaseIndex = i
+
+        if (newPhase.atkMultiplier) {
+          const prevMult = prevPhase?.atkMultiplier || 1
+          this.state.enemy.attack = Math.floor(
+            (this.state.enemy.attack / prevMult) * newPhase.atkMultiplier
+          )
+        }
+        if (newPhase.defMultiplier) {
+          const prevMult = prevPhase?.defMultiplier || 1
+          this.state.enemy.defense = Math.floor(
+            (this.state.enemy.defense / prevMult) * newPhase.defMultiplier
+          )
+        }
+        if (newPhase.atkBonus !== undefined) {
+          const prevBonus = prevPhase?.atkBonus || 0
+          this.state.enemy.attack += newPhase.atkBonus - prevBonus
+        }
+        if (newPhase.defBonus !== undefined) {
+          const prevBonus = prevPhase?.defBonus || 0
+          this.state.enemy.defense += newPhase.defBonus - prevBonus
+        }
+        this.state.log.push({
+          timestamp: Date.now(),
+          actorId: this.state.enemy.id,
+          action: newPhase.name ? `进入阶段：${newPhase.name}` : `进入阶段 ${i + 1}！`
+        })
+      }
+    }
+  }
+
   private executePlayerAction() {
     const availableSkill = this.state.player.skills.find(s => s.currentCd === 0)
     if (!availableSkill) return
 
-    executeSkill(this.state.player, this.state.enemy, availableSkill, this.state.log)
+    const beforeHp = this.state.enemy.hp
+    executeSkill(this.state.player, this.state.enemy, availableSkill, this.state.log, {
+      state: this.state
+    })
+    const damageDealt = beforeHp - this.state.enemy.hp
+    if (damageDealt > 0) {
+      const reflect = applyReflect(this.state.enemy, damageDealt)
+      if (reflect > 0) {
+        this.state.player.hp = Math.max(0, this.state.player.hp - reflect)
+        this.state.log.push({
+          timestamp: Date.now(),
+          actorId: this.state.enemy.id,
+          action: `反伤 - ${reflect}`,
+          targetId: this.state.player.id,
+          damage: reflect
+        })
+      }
+    }
 
     if (availableSkill.cooldown > 0) {
       availableSkill.currentCd = availableSkill.cooldown
@@ -143,13 +224,32 @@ export class CombatSimulator {
   }
 
   private executeEnemyAction() {
-    const skill = this.state.enemy.skills[0]
-    executeSkill(this.state.enemy, this.state.player, skill, this.state.log)
+    const phaseSkillIndex = this.bossPhases[this.currentPhaseIndex]?.skillIndex
+    const skillIndex = phaseSkillIndex !== undefined ? Math.min(phaseSkillIndex, this.state.enemy.skills.length - 1) : 0
+    const skill = this.state.enemy.skills[skillIndex] || this.state.enemy.skills[0]
+    const beforeHp = this.state.player.hp
+    executeSkill(this.state.enemy, this.state.player, skill, this.state.log, {
+      state: this.state
+    })
+    const damageDealt = beforeHp - this.state.player.hp
+    if (damageDealt > 0) {
+      const reflect = applyReflect(this.state.player, damageDealt)
+      if (reflect > 0) {
+        this.state.enemy.hp = Math.max(0, this.state.enemy.hp - reflect)
+        this.state.log.push({
+          timestamp: Date.now(),
+          actorId: this.state.player.id,
+          action: `反伤 - ${reflect}`,
+          targetId: this.state.enemy.id,
+          damage: reflect
+        })
+      }
+    }
   }
 
   private executeSummonAction(summon: CombatEntity) {
     const skill = summon.skills[0]
-    executeSkill(summon, this.state.enemy, skill, this.state.log)
+    executeSkill(summon, this.state.enemy, skill, this.state.log, { state: this.state })
   }
 
   private checkCombatEnd() {

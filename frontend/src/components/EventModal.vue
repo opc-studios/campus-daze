@@ -58,6 +58,16 @@ const handleWebSocketEvent = (event: CustomEvent) => {
   showModal.value = true
 }
 
+const handleMapEvent = (event: CustomEvent) => {
+  const { eventId } = event.detail
+  const eventsConfig = (window as any).__gameConfigs?.events || []
+  const evt = eventsConfig.find((e: any) => e.eventId === eventId)
+  if (evt) {
+    currentEvent.value = evt
+    showModal.value = true
+  }
+}
+
 const handleSelect = async (optionIndex: number) => {
   if (!currentEvent.value || isResolving.value) return
   
@@ -103,9 +113,11 @@ const formatRewards = (rewards: EventOption['rewards']) => {
 
 onMounted(() => {
   window.addEventListener('ws-random-event', handleWebSocketEvent as EventListener)
+  window.addEventListener('map-event-trigger', handleMapEvent as EventListener)
 })
 
 onUnmounted(() => {
   window.removeEventListener('ws-random-event', handleWebSocketEvent as EventListener)
+  window.removeEventListener('map-event-trigger', handleMapEvent as EventListener)
 })
 </script>

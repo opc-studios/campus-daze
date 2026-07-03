@@ -3,22 +3,35 @@ import { CombatSimulator } from '../combat/simulator'
 import { useGameStore } from '../../stores/game'
 import type { ActiveSkill } from '../combat/types'
 
+interface CombatInitData {
+  monsterId: string
+  nodeId: string
+  isBoss: boolean
+}
+
 export class CombatOverlayScene extends Phaser.Scene {
   private simulator!: CombatSimulator
   private playerHpBar!: Phaser.GameObjects.Graphics
   private enemyHpBar!: Phaser.GameObjects.Graphics
   private speedText!: Phaser.GameObjects.Text
   private isRunning = false
+  private monsterId = ''
+  private nodeId = ''
+  private isBoss = false
 
   constructor() {
     super({ key: 'CombatOverlayScene' })
   }
 
-  init(data: { monsterId: string }) {
+  init(data: CombatInitData) {
     const gameStore = useGameStore()
     const monstersConfig = this.cache.json.get('monsters') || []
     const skillsConfig = this.cache.json.get('skills') || []
     const rolesConfig = this.cache.json.get('roles') || []
+
+    this.monsterId = data.monsterId
+    this.nodeId = data.nodeId
+    this.isBoss = data.isBoss || false
 
     const monster = monstersConfig.find((m: any) => m.monsterId === data.monsterId)
     if (!monster) {
@@ -32,6 +45,15 @@ export class CombatOverlayScene extends Phaser.Scene {
       return
     }
 
+    if (gameStore.state) {
+      gameStore.setForm('human')
+      gameStore.setCombatState({
+        state: 'init',
+        activeCombatId: data.nodeId,
+        monsterId: data.monsterId
+      })
+    }
+
     const role = rolesConfig.find((r: any) => r.roleId === playerState.roleId)
     const mainAttr = role?.mainAttr || 'knowledge'
 
@@ -39,6 +61,17 @@ export class CombatOverlayScene extends Phaser.Scene {
       .filter((skillId): skillId is string => skillId !== null)
       .map(skillId => {
         const skillConfig = skillsConfig.find((s: any) => s.skillId === skillId)
+        if (!skillConfig) {
+          return {
+            skillId,
+            name: skillId,
+            cooldown: 0,
+            currentCd: 0,
+            multiplier: 1.0,
+            target: 'enemy' as const,
+            unavoidable: false
+          }
+        }
         return {
           skillId: skillConfig.skillId,
           name: skillConfig.name,
@@ -46,9 +79,22 @@ export class CombatOverlayScene extends Phaser.Scene {
           currentCd: 0,
           multiplier: skillConfig.multiplier,
           target: 'enemy' as const,
-          unavoidable: skillConfig.unavoidable || false
+          unavoidable: skillConfig.unavoidable || false,
+          effect: skillConfig.effect || undefined
         }
       })
+
+    let initialShield = 0
+    if (gameStore.state?.monsters[this.nodeId]) {
+      const monsterInfo = gameStore.state.monsters[this.nodeId]
+      if (monsterInfo.failCount >= 3 && !this.isBoss) {
+        initialShield = 50
+      } else if (monsterInfo.failCount >= 2 && this.isBoss) {
+        initialShield = Math.floor(
+          (100 + playerState.level * 18 + playerState.attrs.resilience * 12) * 0.3
+        )
+      }
+    }
 
     this.simulator = new CombatSimulator(
       {
@@ -57,7 +103,8 @@ export class CombatOverlayScene extends Phaser.Scene {
         attrs: playerState.attrs,
         combatStats: playerState.combatStats,
         combatRole: playerState.combatRole,
-        mainAttr
+        mainAttr,
+        initialShield
       },
       {
         monsterId: monster.monsterId,
@@ -67,7 +114,8 @@ export class CombatOverlayScene extends Phaser.Scene {
         def: monster.def,
         actionInterval: monster.actionInterval,
         evasionRate: monster.evasionRate,
-        skills: monster.skills
+        skills: monster.skills,
+        phases: monster.phases
       },
       equippedSkills
     )
@@ -76,10 +124,10 @@ export class CombatOverlayScene extends Phaser.Scene {
   create() {
     this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.8)
 
-    this.add.text(640, 50, '战斗开始!', {
+    this.add.text(640, 50, this.isBoss ? 'Boss 战!' : '战斗开始!', {
       fontFamily: 'Arial',
       fontSize: '32px',
-      color: '#ffffff'
+      color: this.isBoss ? '#FFD700' : '#ffffff'
     }).setOrigin(0.5)
 
     this.add.text(200, 150, this.simulator.getState().player.name, {
@@ -198,17 +246,92 @@ export class CombatOverlayScene extends Phaser.Scene {
         gameStore.addCoins(monster.rewards.coins || 0)
       }
 
-      this.add.text(640, 360, '胜利!', {
-        fontFamily: 'Arial',
-        fontSize: '48px',
-        color: '#00FF00'
-      }).setOrigin(0.5)
+      if (gameStore.state) {
+        if (gameStore.state.monsters[this.nodeId]) {
+          gameStore.setMonsterState(this.nodeId, {
+            state: 'cleared',
+            failCount: 0
+          })
+        }
+        gameStore.setCombatState({
+          state: 'settlement',
+          result: 'win',
+          lastResult: {
+            resultId: `${this.nodeId}_${Date.now()}`,
+            monsterId: enemyId,
+            outcome: 'win',
+            rewards: monster?.rewards || [],
+            createdAt: Date.now()
+          }
+        })
+      }
+
+      gameStore.completeNode(this.nodeId)
+
+      if (this.isBoss) {
+        const chapterIndex = (gameStore.currentChapter || 1) - 1
+        if (chapterIndex >= 0 && chapterIndex < 4) {
+          const archivesInChapter = this.countArchivesInChapter(chapterIndex + 1)
+          let endingLevel = 0
+          if (archivesInChapter >= 2) endingLevel = 2
+          else if (archivesInChapter >= 1) endingLevel = 1
+          gameStore.setChapterEnding(chapterIndex, endingLevel)
+
+          gameStore.clearChapter(chapterIndex)
+
+          this.showVictoryText('Boss 通关！章节解锁！', '#FFD700')
+
+          this.time.delayedCall(2500, () => {
+            if (chapterIndex + 1 >= 4) {
+              window.dispatchEvent(new CustomEvent('game-complete'))
+            } else {
+              this.scene.restart()
+              this.scene.stop()
+            }
+          })
+          return
+        }
+      }
+
+      this.showVictoryText('胜利!', '#00FF00')
     } else {
-      this.add.text(640, 360, '失败...', {
-        fontFamily: 'Arial',
-        fontSize: '48px',
-        color: '#FF0000'
-      }).setOrigin(0.5)
+      if (gameStore.state) {
+        if (gameStore.state.monsters[this.nodeId]) {
+          const currentFailCount = gameStore.state.monsters[this.nodeId].failCount || 0
+          gameStore.setMonsterState(this.nodeId, {
+            state: 'patrol',
+            failCount: currentFailCount + 1
+          })
+        }
+
+        const playerMaxHp =
+          100 + (gameStore.player?.level || 1) * 18 + (gameStore.player?.attrs.resilience || 0) * 12
+        const consolationExp = Math.floor(playerMaxHp * 0.2 * 0.1)
+        if (consolationExp > 0) {
+          gameStore.addExp(consolationExp)
+        }
+
+        if (this.isBoss && gameStore.state.monsters[this.nodeId]) {
+          const failCount = gameStore.state.monsters[this.nodeId].failCount || 0
+          if (failCount >= 2) {
+            gameStore.addExp(30)
+          }
+        }
+
+        gameStore.setCombatState({
+          state: 'settlement',
+          result: 'lose',
+          lastResult: {
+            resultId: `${this.nodeId}_${Date.now()}`,
+            monsterId: this.monsterId,
+            outcome: 'lose',
+            rewards: [],
+            createdAt: Date.now()
+          }
+        })
+      }
+
+      this.showVictoryText('失败...', '#FF0000')
     }
 
     gameStore.saveSave()
@@ -216,5 +339,22 @@ export class CombatOverlayScene extends Phaser.Scene {
     this.time.delayedCall(2000, () => {
       this.scene.stop()
     })
+  }
+
+  private countArchivesInChapter(chapter: number): number {
+    const archivesConfig = this.cache.json.get('archives') || []
+    const gameStore = useGameStore()
+    const collected = gameStore.progress?.archives || []
+    return archivesConfig.filter(
+      (a: any) => a.chapter === chapter && collected.includes(a.archiveId || a.archive_id)
+    ).length
+  }
+
+  private showVictoryText(text: string, color: string) {
+    this.add.text(640, 360, text, {
+      fontFamily: 'Arial',
+      fontSize: '48px',
+      color: color
+    }).setOrigin(0.5)
   }
 }

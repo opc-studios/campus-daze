@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-lg p-6">
+  <div id="idle-panel" class="bg-white rounded-lg shadow-lg p-6 scroll-mt-4">
     <h3 class="text-xl font-bold text-[#1A3C6E] mb-4">挂机任务</h3>
     
     <div class="flex gap-4 mb-4">

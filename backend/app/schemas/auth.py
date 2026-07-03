@@ -3,19 +3,25 @@ from typing import Optional
 
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    username: str
     password: str
     nickname: str
+    email: Optional[EmailStr] = None
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: str
     password: str
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class UserResponse(BaseModel):
     id: int
-    email: str
+    username: str
+    email: Optional[str] = None
     nickname: str
     is_active: bool
 

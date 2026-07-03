@@ -1,0 +1,106 @@
+[
+  {
+    "puzzleId": "puz_library_1",
+    "name": "索书号谜题",
+    "description": "图书管理员的电脑屏幕上显示着一组被打乱的索书号，需要按正确顺序排列才能解锁下一区域。",
+    "puzzleType": "sort",
+    "chapter": 1,
+    "content": {
+      "items": ["TP311.5", "G642.0", "H319.3", "O241.7"],
+      "correctOrder": ["G642.0", "H319.3", "O241.7", "TP311.5"]
+    },
+    "reward": { "type": "archive", "itemId": "archive_lizhuang" },
+    "hint": "按中图法字母顺序排列"
+  },
+  {
+    "puzzleId": "puz_library_2",
+    "name": "隐藏通道密码",
+    "description": "一扇布满灰尘的门后似乎藏着什么，门上有一个四位数字密码锁。墙上的便签写着：「建校年份的末四位」。",
+    "puzzleType": "code",
+    "chapter": 1,
+    "content": {
+      "answer": "1907",
+      "inputLength": 4
+    },
+    "reward": { "type": "credits", "amount": 3 },
+    "hint": "同济大学 1907 年建校"
+  },
+  {
+    "puzzleId": "puz_lab_1",
+    "name": "化学方程式配平",
+    "description": "实验台上的白板写着一个未配平的方程式，需要输入正确的化学计量数。",
+    "puzzleType": "code",
+    "chapter": 2,
+    "content": {
+      "answer": "2 7 4 6",
+      "inputLength": 7
+    },
+    "reward": { "type": "archive", "itemId": "archive_lab_notes" },
+    "hint": "C2H6 + O2 → CO2 + H2O"
+  },
+  {
+    "puzzleId": "puz_lab_2",
+    "name": "电路连线",
+    "description": "一个复杂的电路板需要按特定顺序连接才能打开通风管道。",
+    "puzzleType": "sort",
+    "chapter": 2,
+    "content": {
+      "items": ["电源", "开关", "电阻", "电容", "负载"],
+      "correctOrder": ["电源", "开关", "电阻", "电容", "负载"]
+    },
+    "reward": { "type": "credits", "amount": 5 },
+    "hint": "按电流流向连接"
+  },
+  {
+    "puzzleId": "puz_history_1",
+    "name": "校史时间线",
+    "description": "校史馆的展板上挂着几张历史照片，需要按时间先后顺序排列。",
+    "puzzleType": "sort",
+    "chapter": 3,
+    "content": {
+      "items": ["1927年迁吴淞", "1907年建校", "1937年抗战西迁", "1946年回沪复员"],
+      "correctOrder": ["1907年建校", "1927年迁吴淞", "1937年抗战西迁", "1946年回沪复员"]
+    },
+    "reward": { "type": "archive", "itemId": "archive_wusong_campus" },
+    "hint": "从早到晚排列"
+  },
+  {
+    "puzzleId": "puz_history_2",
+    "name": "时间裂缝密码",
+    "description": "裂缝中飘出一张泛黄的纸条，上面写着一道谜题：「李庄时期的代校训，四个字」。",
+    "puzzleType": "code",
+    "chapter": 3,
+    "content": {
+      "answer": "刚毅坚卓",
+      "inputLength": 4
+    },
+    "reward": { "type": "credits", "amount": 8 },
+    "hint": "抗战西迁李庄时期的精神"
+  },
+  {
+    "puzzleId": "puz_final_1",
+    "name": "终极复习",
+    "description": "答辩前的最后复习，需要把核心知识点按逻辑顺序串联起来。",
+    "puzzleType": "sort",
+    "chapter": 4,
+    "content": {
+      "items": ["提出问题", "文献综述", "研究方法", "数据分析", "结论建议"],
+      "correctOrder": ["提出问题", "文献综述", "研究方法", "数据分析", "结论建议"]
+    },
+    "reward": { "type": "archive", "itemId": "archive_thesis_defense" },
+    "hint": "学术论文的标准结构"
+  },
+  {
+    "puzzleId": "puz_final_2",
+    "name": "心理调适",
+    "description": "面对答辩压力，需要按正确顺序进行心理调适。把以下步骤按先后顺序排列。",
+    "puzzleType": "sort",
+    "chapter": 4,
+    "content": {
+      "items": ["深呼吸", "正面暗示", "回顾要点", "自信陈述", "从容应对提问"],
+      "correctOrder": ["深呼吸", "正面暗示", "回顾要点", "自信陈述", "从容应对提问"]
+    },
+    "reward": { "type": "credits", "amount": 10 },
+    "hint": "从内到外，从静到动"
+  }
+]

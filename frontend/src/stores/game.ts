@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { saveApi } from '../api/save'
 import type { GameState, RoleId, CombatRole } from '../types/game'
 import rolesConfig from '../game/config/roles.json'
+import skillsConfig from '../game/config/skills.json'
 
 function createDefaultGameState(roleId: RoleId): GameState {
   const role = rolesConfig.find(r => r.roleId === roleId)
@@ -34,7 +35,8 @@ function createDefaultGameState(roleId: RoleId): GameState {
       chapterCredits: 0,
       clearedNodes: [],
       seenEvents: [],
-      archives: []
+      archives: [],
+      chapterEndings: [0, 0, 0, 0]
     },
     map: {
       currentMapId: 'ch1_map1',
@@ -56,6 +58,10 @@ function createDefaultGameState(roleId: RoleId): GameState {
   }
 }
 
+function hasSkillConfig(skillId: string): boolean {
+  return skillsConfig.some(s => s.skillId === skillId)
+}
+
 export const useGameStore = defineStore('game', () => {
   const state = ref<GameState | null>(null)
   const stateVersion = ref(0)
@@ -68,6 +74,7 @@ export const useGameStore = defineStore('game', () => {
   const combatState = computed(() => state.value?.combat ?? null)
   const inventory = computed(() => state.value?.inventory ?? {})
   const equipped = computed(() => state.value?.equipped ?? {})
+  const currentChapter = computed(() => state.value?.progress.currentChapter ?? 0)
 
   const unlockedSkills = computed(() => {
     if (!state.value) return []
@@ -81,8 +88,8 @@ export const useGameStore = defineStore('game', () => {
     if (gs.progress.currentChapter >= 1) ids.push(`${roleId}_s1`)
     if (chapterCredits >= 8 || chapterCleared[0]) ids.push(`${roleId}_s2`)
     if (chapterCleared[0]) ids.push(`${roleId}_s3`)
-    if (chapterCleared[1]) ids.push(`${roleId}_s4`)
-    if (chapterCleared[2]) ids.push(`${roleId}_s5`)
+    if (chapterCleared[1] && hasSkillConfig(`${roleId}_s4`)) ids.push(`${roleId}_s4`)
+    if (chapterCleared[2] && hasSkillConfig(`${roleId}_s5`)) ids.push(`${roleId}_s5`)
     return [...new Set(ids)]
   }
 
@@ -92,7 +99,7 @@ export const useGameStore = defineStore('game', () => {
       state.value = data.state
       stateVersion.value = data.state_version
       loaded.value = true
-    } catch (err) {
+    } catch {
       loaded.value = false
     }
   }
@@ -120,17 +127,24 @@ export const useGameStore = defineStore('game', () => {
 
   function switchForm() {
     if (!state.value || !state.value.map.formSwitchAllowed) return
+    if (state.value.combat.state === 'running' || state.value.combat.state === 'init') return
     state.value.player.currentForm =
       state.value.player.currentForm === 'human' ? 'cat' : 'human'
+  }
+
+  function setForm(form: 'human' | 'cat') {
+    if (!state.value) return
+    state.value.player.currentForm = form
   }
 
   function addExp(amount: number) {
     if (!state.value) return
     state.value.player.exp += amount
-    const expToNext = state.value.player.level * 100
+    let expToNext = state.value.player.level * 100
     while (state.value.player.exp >= expToNext) {
       state.value.player.exp -= expToNext
       state.value.player.level++
+      expToNext = state.value.player.level * 100
     }
   }
 
@@ -154,11 +168,16 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function useItem(itemId: string) {
-    if (!state.value) return
+    if (!state.value) return false
     if (!state.value.inventory[itemId] || state.value.inventory[itemId] <= 0) return false
     state.value.inventory[itemId]--
     if (state.value.inventory[itemId] === 0) delete state.value.inventory[itemId]
     return true
+  }
+
+  function equipItem(slot: 'study' | 'intern' | 'explore', itemId: string | undefined) {
+    if (!state.value) return
+    state.value.equipped[slot] = itemId
   }
 
   function completeNode(nodeId: string) {
@@ -185,9 +204,44 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function addSeenEvent(eventId: string) {
+    if (!state.value) return
+    if (!state.value.progress.seenEvents.includes(eventId)) {
+      state.value.progress.seenEvents.push(eventId)
+    }
+  }
+
+  function clearChapter(chapterIndex: number) {
+    if (!state.value) return
+    state.value.progress.chapterCleared[chapterIndex] = true
+    state.value.progress.chapterCredits = 0
+    if (chapterIndex + 1 < 4) {
+      state.value.progress.currentChapter = chapterIndex + 1
+    }
+  }
+
   function equipSkill(slotIndex: 1 | 2, skillId: string | null) {
     if (!state.value) return
     state.value.player.equippedSkills[slotIndex] = skillId
+  }
+
+  function setCombatState(combatState: Partial<GameState['combat']>) {
+    if (!state.value) return
+    state.value.combat = { ...state.value.combat, ...combatState }
+  }
+
+  function setMonsterState(nodeId: string, monsterState: Partial<GameState['monsters'][string]>) {
+    if (!state.value) return
+    if (!state.value.monsters[nodeId]) return
+    state.value.monsters[nodeId] = { ...state.value.monsters[nodeId], ...monsterState }
+  }
+
+  function setChapterEnding(chapterIndex: number, endingLevel: number) {
+    if (!state.value) return
+    if (!state.value.progress.chapterEndings) {
+      state.value.progress.chapterEndings = [0, 0, 0, 0]
+    }
+    state.value.progress.chapterEndings[chapterIndex] = endingLevel
   }
 
   return {
@@ -201,19 +255,28 @@ export const useGameStore = defineStore('game', () => {
     combatState,
     inventory,
     equipped,
+    currentChapter,
     unlockedSkills,
     loadSave,
     saveSave,
     initSave,
     switchForm,
+    setForm,
     addExp,
     addCredits,
     addCoins,
     addItem,
     useItem,
+    equipItem,
     completeNode,
     revealRegion,
     addArchive,
-    equipSkill
+    addSeenEvent,
+    clearChapter,
+    equipSkill,
+    setCombatState,
+    setMonsterState,
+    setChapterEnding,
+    getUnlockedSkillIds
   }
 })

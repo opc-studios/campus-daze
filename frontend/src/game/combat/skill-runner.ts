@@ -1,11 +1,23 @@
-import type { CombatEntity, ActiveSkill, CombatLog } from './types'
-import { calcBaseDamage, calcSkillDamage, calcCritDamage, rollEvasion, rollCrit, rollAccuracy } from './formulas'
+import type { CombatEntity, ActiveSkill, CombatLog, CombatState, SkillEffect } from './types'
+import {
+  calcBaseDamage,
+  calcSkillDamage,
+  calcCritDamage,
+  rollEvasion,
+  rollCrit,
+  rollAccuracy
+} from './formulas'
+
+export interface SkillExecutorContext {
+  state: CombatState
+}
 
 export function executeSkill(
   attacker: CombatEntity,
   defender: CombatEntity,
   skill: ActiveSkill,
-  log: CombatLog[]
+  log: CombatLog[],
+  context?: SkillExecutorContext
 ): { damage: number; isCrit: boolean; isEvaded: boolean } {
   const result = { damage: 0, isCrit: false, isEvaded: false }
 
@@ -31,36 +43,48 @@ export function executeSkill(
     return result
   }
 
-  const baseDamage = calcBaseDamage(attacker.attack, defender.defense)
-  let skillDamage = calcSkillDamage(baseDamage, skill.multiplier)
+  const hits = skill.effect?.type === 'multi_hit' ? skill.effect.hits || 1 : 1
+  const armorPen = skill.effect?.type === 'armor_pen' ? skill.effect.value || 0 : 0
 
-  if (rollCrit(attacker.critRate)) {
-    skillDamage = calcCritDamage(skillDamage, attacker.critDamage)
-    result.isCrit = true
+  let totalDamage = 0
+  let anyCrit = false
+
+  for (let i = 0; i < hits; i++) {
+    const effectiveDef = armorPen > 0 ? Math.max(0, defender.defense * (1 - armorPen)) : defender.defense
+    const baseDamage = calcBaseDamage(attacker.attack, effectiveDef)
+    let skillDamage = calcSkillDamage(baseDamage, skill.multiplier)
+
+    if (rollCrit(attacker.critRate)) {
+      skillDamage = calcCritDamage(skillDamage, attacker.critDamage)
+      anyCrit = true
+    }
+
+    let finalDamage = skillDamage
+
+    if (defender.shield > 0) {
+      const absorbed = Math.min(defender.shield, finalDamage)
+      defender.shield -= absorbed
+      finalDamage -= absorbed
+    }
+
+    defender.hp = Math.max(0, defender.hp - finalDamage)
+    totalDamage += finalDamage
   }
 
-  let finalDamage = skillDamage
-
-  if (defender.shield > 0) {
-    const absorbed = Math.min(defender.shield, finalDamage)
-    defender.shield -= absorbed
-    finalDamage -= absorbed
-  }
-
-  defender.hp = Math.max(0, defender.hp - finalDamage)
-  result.damage = finalDamage
+  result.damage = totalDamage
+  result.isCrit = anyCrit
 
   if (skill.effect) {
-    applyEffect(attacker, defender, skill, log)
+    applyEffect(attacker, defender, skill, skill.effect, log, context)
   }
 
   log.push({
     timestamp: Date.now(),
     actorId: attacker.id,
-    action: skill.name,
+    action: hits > 1 ? `${skill.name} x${hits}` : skill.name,
     targetId: defender.id,
-    damage: finalDamage,
-    isCrit: result.isCrit
+    damage: totalDamage,
+    isCrit: anyCrit
   })
 
   return result
@@ -70,11 +94,11 @@ function applyEffect(
   attacker: CombatEntity,
   defender: CombatEntity,
   skill: ActiveSkill,
-  _log: CombatLog[]
+  effect: SkillEffect,
+  log: CombatLog[],
+  context?: SkillExecutorContext
 ) {
-  if (!skill.effect) return
-
-  const { type, stat, value, duration, stacks } = skill.effect
+  const { type, stat, value, duration, stacks } = effect
 
   switch (type) {
     case 'buff':
@@ -112,12 +136,97 @@ function applyEffect(
     case 'shield':
       if (value) {
         attacker.shield += value
+        log.push({
+          timestamp: Date.now(),
+          actorId: attacker.id,
+          action: `${skill.name} - 获得 ${value} 护盾`
+        })
       }
       break
 
     case 'heal':
       if (value) {
+        const healAmount = Math.min(value, attacker.maxHp - attacker.hp)
         attacker.hp = Math.min(attacker.maxHp, attacker.hp + value)
+        log.push({
+          timestamp: Date.now(),
+          actorId: attacker.id,
+          action: `${skill.name} - 回复 ${healAmount} HP`,
+          healing: healAmount
+        })
+      }
+      break
+
+    case 'dot':
+      if (value && duration) {
+        defender.buffs.push({
+          type: 'debuff',
+          stat: 'dot',
+          value,
+          remainingDuration: duration
+        })
+      }
+      break
+
+    case 'summon':
+      if (context && effect.damage && duration) {
+        const summonId = `${attacker.id}_summon_${Date.now()}`
+        const summonEntity: CombatEntity = {
+          id: summonId,
+          name: '学风精灵',
+          hp: 1,
+          maxHp: 1,
+          attack: effect.damage,
+          defense: 0,
+          actionInterval: 1.5,
+          currentActionGauge: 0,
+          skills: [
+            {
+              skillId: `${summonId}_attack`,
+              name: '精灵冲击',
+              cooldown: 0,
+              currentCd: 0,
+              multiplier: 1.0,
+              target: 'enemy',
+              unavoidable: false
+            }
+          ],
+          buffs: [
+            {
+              type: 'buff',
+              stat: 'summon_ttl',
+              value: duration,
+              remainingDuration: duration
+            }
+          ],
+          shield: 0,
+          evasionRate: 0,
+          accuracyRate: 1.0,
+          critRate: 0,
+          critDamage: 1.0,
+          isPlayer: attacker.isPlayer
+        }
+        context.state.summons.push(summonEntity)
+        log.push({
+          timestamp: Date.now(),
+          actorId: attacker.id,
+          action: `${skill.name} - 召唤学风精灵 (${duration}回合)`
+        })
+      }
+      break
+
+    case 'armor_pen':
+      // 已在 executeSkill 中处理，这里无需再扣血
+      break
+
+    case 'reflect':
+      if (value && duration) {
+        attacker.buffs.push({
+          type: 'buff',
+          stat: 'reflect',
+          value,
+          remainingDuration: duration
+        })
       }
       break
   }
@@ -144,7 +253,16 @@ function applyBuffStat(entity: CombatEntity, stat: string, value: number) {
 
 export function tickBuffs(entity: CombatEntity) {
   entity.buffs = entity.buffs.filter(buff => {
+    if (buff.stat === 'dot' && buff.value > 0) {
+      entity.hp = Math.max(0, entity.hp - buff.value)
+    }
     buff.remainingDuration--
     return buff.remainingDuration > 0
   })
+}
+
+export function applyReflect(entity: CombatEntity, incomingDamage: number): number {
+  const reflectBuff = entity.buffs.find(b => b.stat === 'reflect' && b.type === 'buff')
+  if (!reflectBuff || !reflectBuff.value) return 0
+  return Math.floor(incomingDamage * reflectBuff.value)
 }

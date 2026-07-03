@@ -7,6 +7,7 @@ import mapNodesConfig from '../config/map-nodes.json'
 import eventsConfig from '../config/events.json'
 import itemsConfig from '../config/items.json'
 import archivesConfig from '../config/archives.json'
+import puzzlesConfig from '../config/puzzles.json'
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -60,6 +61,7 @@ export class BootScene extends Phaser.Scene {
     this.cache.json.add('events', eventsConfig)
     this.cache.json.add('items', itemsConfig)
     this.cache.json.add('archives', archivesConfig)
+    this.cache.json.add('puzzles', puzzlesConfig)
 
     this.scene.start('MapExploreScene')
   }

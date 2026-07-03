@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
-from app.api import auth, health, ws, event, save
+from app.api import auth, health, ws, event, save, images
 from app.database import engine, Base
 from loguru import logger
 
@@ -35,6 +35,7 @@ app.include_router(health.router)
 app.include_router(ws.router)
 app.include_router(event.router)
 app.include_router(save.router)
+app.include_router(images.router)
 
 
 if __name__ == "__main__":

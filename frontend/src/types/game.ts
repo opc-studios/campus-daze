@@ -56,6 +56,7 @@ export interface ProgressState {
   clearedNodes: string[]
   seenEvents: string[]
   archives: string[]
+  chapterEndings?: number[]
 }
 
 export interface MapState {
@@ -68,13 +69,13 @@ export interface MapState {
 }
 
 export interface MonsterInfo {
-  nodeId: string
-  monsterId: string
+  nodeId?: string
+  monsterId?: string
   state: MonsterStateType
-  position: Position
-  patrolAnchor: Position
-  alertRadius: number
-  leashRadius: number
+  position?: Position
+  patrolAnchor?: Position
+  alertRadius?: number
+  leashRadius?: number
   failCount: number
 }
 
@@ -90,7 +91,10 @@ export interface CombatInfo {
   canSkip: boolean
   skipped: boolean
   result?: CombatResultType
+  activeCombatId?: string
+  monsterId?: string
   lastResult?: {
+    resultId?: string
     monsterId: string
     outcome: string
     rewards: Reward[]

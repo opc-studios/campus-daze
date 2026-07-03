@@ -33,11 +33,11 @@ def client(db_session):
 @pytest.fixture
 def auth_token(client):
     import uuid
-    unique_email = f"save_test_{uuid.uuid4().hex[:8]}@example.com"
+    unique_username = f"save_test_{uuid.uuid4().hex[:8]}"
     response = client.post(
         "/api/auth/register",
         json={
-            "email": unique_email,
+            "username": unique_username,
             "password": "password123",
             "nickname": "Test User"
         }

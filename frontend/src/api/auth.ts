@@ -1,14 +1,19 @@
 import apiClient from './client'
 
 export interface LoginRequest {
-  email: string
+  username: string
   password: string
 }
 
 export interface RegisterRequest {
-  email: string
+  username: string
   password: string
   nickname: string
+  email?: string
+}
+
+export interface RefreshRequest {
+  refresh_token: string
 }
 
 export interface TokenResponse {
@@ -17,7 +22,8 @@ export interface TokenResponse {
   token_type: string
   user: {
     id: number
-    email: string
+    username: string
+    email: string | null
     nickname: string
     is_active: boolean
   }
@@ -35,9 +41,14 @@ export const authApi = {
   },
 
   refresh: async (refreshToken: string): Promise<TokenResponse> => {
-    const response = await apiClient.post('/api/auth/refresh', null, {
-      params: { refresh_token: refreshToken }
+    const response = await apiClient.post('/api/auth/refresh', {
+      refresh_token: refreshToken
     })
+    return response.data
+  },
+
+  me: async () => {
+    const response = await apiClient.get('/api/auth/me')
     return response.data
   },
 

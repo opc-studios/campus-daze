@@ -5,7 +5,15 @@ class AuthInvalidCredentials(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error_code": "AUTH_INVALID_CREDENTIALS", "message": "邮箱或密码错误"},
+            detail={"error_code": "AUTH_INVALID_CREDENTIALS", "message": "用户名或密码错误"},
+        )
+
+
+class AuthUsernameExists(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"error_code": "AUTH_USERNAME_EXISTS", "message": "用户名已注册"},
         )
 
 
@@ -14,14 +22,6 @@ class AuthEmailExists(HTTPException):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
             detail={"error_code": "AUTH_EMAIL_EXISTS", "message": "邮箱已注册"},
-        )
-
-
-class AuthEmailNotVerified(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error_code": "AUTH_EMAIL_NOT_VERIFIED", "message": "邮箱未验证"},
         )
 
 
@@ -82,4 +82,12 @@ class RateLimitExceeded(HTTPException):
         super().__init__(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail={"error_code": "RATE_LIMIT_EXCEEDED", "message": "请求过于频繁"},
+        )
+
+
+class ImageNotFound(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "IMAGE_NOT_FOUND", "message": "请求的立绘/图标不存在"},
         )
