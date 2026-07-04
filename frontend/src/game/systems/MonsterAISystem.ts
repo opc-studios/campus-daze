@@ -7,7 +7,7 @@ export interface Monster {
   nodeId: string
   monsterId: string
   state: MonsterState
-  sprite: Phaser.GameObjects.Arc
+  sprite: Phaser.GameObjects.Arc | Phaser.GameObjects.Image
   position: { x: number; y: number }
   patrolAnchor: { x: number; y: number }
   alertRadius: number
@@ -26,6 +26,12 @@ export class MonsterAISystem {
     this.scene = scene
   }
 
+  /**
+   * 添加怪物到地图
+   * @param frameName 可选的 germs_atlas 帧名（blue1/green1/purple1/red1/ring 等）
+   *                  传入且 germs_atlas 已加载时，使用精灵图替代粉红圆形
+   * @param isBoss    是否 Boss（影响显示尺寸）
+   */
   addMonster(
     id: string,
     nodeId: string,
@@ -34,10 +40,29 @@ export class MonsterAISystem {
     y: number,
     alertRadius: number,
     leashRadius: number,
-    actionInterval: number
+    actionInterval: number,
+    frameName?: string,
+    isBoss: boolean = false
   ) {
-    const sprite = this.scene.add.circle(x, y, 12, 0xff0000)
-    sprite.setStrokeStyle(2, 0xffffff)
+    let sprite: Phaser.GameObjects.Arc | Phaser.GameObjects.Image
+
+    // 优先使用 germs_atlas 精灵图（替代粉红圆形）
+    if (frameName && this.scene.textures.exists('germs_atlas')) {
+      const image = this.scene.add.image(x, y, 'germs_atlas', frameName)
+      // Boss 用 ring 帧 + 放大；普通怪物按帧原始尺寸缩放
+      if (isBoss || frameName === 'ring') {
+        image.setDisplaySize(48, 48)
+        image.setTint(0xff6666) // Boss 偏红
+      } else {
+        image.setDisplaySize(36, 36)
+      }
+      sprite = image
+    } else {
+      // fallback：粉红圆形
+      const circle = this.scene.add.circle(x, y, isBoss ? 18 : 12, isBoss ? 0xff0000 : 0xffb7c5)
+      circle.setStrokeStyle(2, 0xffffff)
+      sprite = circle
+    }
 
     const monster: Monster = {
       id,
@@ -92,7 +117,9 @@ export class MonsterAISystem {
         case 'chase':
           if (distance > monster.leashRadius) {
             monster.state = 'return'
-          } else if (distance <= 30) {
+          } else if (distance <= monster.alertRadius * 0.5) {
+            // Z 修正：脱战距离按 alertRadius 缩放（原硬编码 30）
+            // alertRadius 典型值 60-100，对应脱战触发距离 30-50
             monster.state = 'combat'
           } else {
             const angle = Phaser.Math.Angle.Between(

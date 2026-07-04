@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { saveApi } from '../api/save'
-import type { GameState, RoleId, CombatRole } from '../types/game'
+import type { GameState, RoleId, CombatRole, FinalEndingType, NewGamePlusState } from '../types/game'
 import rolesConfig from '../game/config/roles.json'
 import skillsConfig from '../game/config/skills.json'
+import itemsConfig from '../game/config/items.json'
+import { calculateFinalEnding, determineEndingType, calculateArchiveRate } from '../game/ending/ending-calculator'
+import type { FinalEnding } from '../game/ending/ending-calculator'
 
 function createDefaultGameState(roleId: RoleId): GameState {
   const role = rolesConfig.find(r => r.roleId === roleId)
@@ -13,16 +16,16 @@ function createDefaultGameState(roleId: RoleId): GameState {
     player: {
       name: role.name,
       roleId,
-      currentForm: 'human',
+      currentForm: 'cat',
       combatRole: role.combatRole as CombatRole,
       level: 1,
       exp: 0,
       attrs: { ...role.baseAttrs },
       combatStats: {
-        critRate: role.combatStats?.critRate ?? 0.05,
+        critRate: role.combatStats?.critRate ?? 0,
         critDamage: role.combatStats?.critDamage ?? 1.5,
-        evasionRate: role.combatStats?.evasionRate ?? 0.05,
-        accuracyRate: role.combatStats?.accuracyRate ?? 0.95
+        evasionRate: role.combatStats?.evasionRate ?? 0,
+        accuracyRate: role.combatStats?.accuracyRate ?? 1.0
       },
       unlockedSkills: [`${roleId}_basic`],
       equippedSkills: [`${roleId}_basic`, null, null]
@@ -36,7 +39,14 @@ function createDefaultGameState(roleId: RoleId): GameState {
       clearedNodes: [],
       seenEvents: [],
       archives: [],
-      chapterEndings: [0, 0, 0, 0]
+      chapterEndings: [0, 0, 0, 0],
+      // GDD §6.6 通关统计字段
+      studyTimeSeconds: 0,
+      exploreCount: 0,
+      eventTriggerCount: 0,
+      // GDD §6.5 三因子之一：每章关键事件选择索引
+      chapterChoices: [0, 0, 0, 0],
+      gameCompleted: false
     },
     map: {
       currentMapId: 'ch1_map1',
@@ -170,6 +180,44 @@ export const useGameStore = defineStore('game', () => {
   function useItem(itemId: string) {
     if (!state.value) return false
     if (!state.value.inventory[itemId] || state.value.inventory[itemId] <= 0) return false
+
+    // GDD §4.1 查找道具配置并应用消耗效果
+    const item = itemsConfig.find((i: any) => i.itemId === itemId)
+    const effect = item?.effect
+    if (effect) {
+      switch (effect.type) {
+        case 'exp':
+          addExp(effect.amount || 0)
+          break
+        case 'credits':
+          addCredits(effect.amount || 0)
+          break
+        case 'coins':
+          addCoins(effect.amount || 0)
+          break
+        case 'heal':
+          // 战斗外回血：写入 player 当前 HP（若存在 currentHp 字段）
+          if ((state.value as any).player?.currentHp !== undefined) {
+            ;(state.value as any).player.currentHp = Math.min(
+              (state.value as any).player.currentHp + (effect.amount || 0),
+              100 + state.value.player.level * 18 + state.value.player.attrs.resilience * 12
+            )
+          }
+          break
+        case 'buff':
+          // 临时 buff：写入 activeBuffs，过期自动清理
+          applyBuff(effect.stat || 'exp_rate', effect.value || 1, effect.duration || 300)
+          break
+        case 'shield':
+          // 护盾：写入 nextCombatShield，战斗开始时应用
+          ;(state.value as any).nextCombatShield = ((state.value as any).nextCombatShield || 0) + (effect.amount || 0)
+          break
+        default:
+          // 非 consumable 类型（souvenir/tool）不消耗
+          if (item?.category !== 'consumable') return false
+      }
+    }
+
     state.value.inventory[itemId]--
     if (state.value.inventory[itemId] === 0) delete state.value.inventory[itemId]
     return true
@@ -180,6 +228,76 @@ export const useGameStore = defineStore('game', () => {
     state.value.equipped[slot] = itemId
   }
 
+  /**
+   * GDD §4.1 道具效果应用：获取挂机槽位装备的乘数
+   * 支持 idle_boost 类型道具（study_headphone EXP+8%, intern_badge 校园币+8%）
+   */
+  function getIdleMultiplier(task: 'study' | 'intern'): { expRate: number; coinRate: number } {
+    let expRate = 1.0
+    let coinRate = 1.0
+    if (!state.value) return { expRate, coinRate }
+
+    // 1. 装备槽道具（study_headphone / intern_badge）
+    const slot = task === 'study' ? 'study' : 'intern'
+    const equippedItemId = state.value.equipped[slot]
+    if (equippedItemId) {
+      const item = itemsConfig.find((i: any) => i.itemId === equippedItemId)
+      if (item?.effect?.type === 'idle_boost') {
+        if (item.effect.stat === 'exp_rate') expRate *= item.effect.value
+        if (item.effect.stat === 'coin_rate') coinRate *= item.effect.value
+      }
+    }
+
+    // 2. 临时 buff 道具（coffee_boost 等，从 activeBuffs 字段读取）
+    const activeBuffs = (state.value as any).activeBuffs as Array<{
+      stat: string
+      value: number
+      expiresAt: number
+    }> | undefined
+    if (activeBuffs && activeBuffs.length > 0) {
+      const now = Math.floor(Date.now() / 1000)
+      activeBuffs.forEach(buff => {
+        if (buff.expiresAt > now) {
+          if (buff.stat === 'exp_rate') expRate *= buff.value
+          if (buff.stat === 'coin_rate') coinRate *= buff.value
+        }
+      })
+      // 清理过期 buff
+      ;(state.value as any).activeBuffs = activeBuffs.filter(b => b.expiresAt > now)
+    }
+
+    return { expRate, coinRate }
+  }
+
+  /**
+   * GDD §4.1 应用消耗品 buff（coffee_boost EXP+20% 持续 5 分钟）
+   */
+  function applyBuff(stat: string, value: number, durationSeconds: number) {
+    if (!state.value) return
+    if (!(state.value as any).activeBuffs) {
+      ;(state.value as any).activeBuffs = []
+    }
+    ;(state.value as any).activeBuffs.push({
+      stat,
+      value,
+      expiresAt: Math.floor(Date.now() / 1000) + durationSeconds
+    })
+  }
+
+  /**
+   * GDD §4.1 获取探索罗盘揭示范围加成
+   */
+  function getRevealBoost(): number {
+    if (!state.value) return 1.0
+    const equippedItemId = state.value.equipped.explore
+    if (!equippedItemId) return 1.0
+    const item = itemsConfig.find((i: any) => i.itemId === equippedItemId)
+    if (item?.effect?.type === 'reveal_boost') {
+      return item.effect.value
+    }
+    return 1.0
+  }
+
   function completeNode(nodeId: string) {
     if (!state.value) return
     if (!state.value.map.completedNodes.includes(nodeId)) {
@@ -187,6 +305,8 @@ export const useGameStore = defineStore('game', () => {
     }
     if (!state.value.progress.clearedNodes.includes(nodeId)) {
       state.value.progress.clearedNodes.push(nodeId)
+      // GDD §6.6 通关统计：探索次数
+      state.value.progress.exploreCount = (state.value.progress.exploreCount || 0) + 1
     }
   }
 
@@ -208,6 +328,25 @@ export const useGameStore = defineStore('game', () => {
     if (!state.value) return
     if (!state.value.progress.seenEvents.includes(eventId)) {
       state.value.progress.seenEvents.push(eventId)
+      // GDD §6.6 通关统计：事件触发数
+      state.value.progress.eventTriggerCount = (state.value.progress.eventTriggerCount || 0) + 1
+    }
+  }
+
+  // GDD §6.6 通关统计：累加学习时长
+  function recordStudyTime(seconds: number) {
+    if (!state.value) return
+    state.value.progress.studyTimeSeconds = (state.value.progress.studyTimeSeconds || 0) + seconds
+  }
+
+  // GDD §6.5 三因子之一：记录章节关键事件选择
+  function recordChapterChoice(chapterIndex: number, choiceIndex: number) {
+    if (!state.value) return
+    if (!state.value.progress.chapterChoices) {
+      state.value.progress.chapterChoices = [0, 0, 0, 0]
+    }
+    if (chapterIndex >= 0 && chapterIndex < 4) {
+      state.value.progress.chapterChoices[chapterIndex] = choiceIndex
     }
   }
 
@@ -217,6 +356,10 @@ export const useGameStore = defineStore('game', () => {
     state.value.progress.chapterCredits = 0
     if (chapterIndex + 1 < 4) {
       state.value.progress.currentChapter = chapterIndex + 1
+    }
+    // GDD §6.5 终章通关时标记 gameCompleted
+    if (chapterIndex === 3) {
+      state.value.progress.gameCompleted = true
     }
   }
 
@@ -241,7 +384,84 @@ export const useGameStore = defineStore('game', () => {
     if (!state.value.progress.chapterEndings) {
       state.value.progress.chapterEndings = [0, 0, 0, 0]
     }
-    state.value.progress.chapterEndings[chapterIndex] = endingLevel
+    // GDD §6.5：综合 archivesInChapter 与 chapterChoices 判定 endingLevel
+    // endingLevel: 0=标准, 1=记忆未完整, 2=记忆完整
+    // chapterChoices[chapterIndex] > 0 视为关键选择有加分（+1 等级，上限 2）
+    const choiceBonus = state.value.progress.chapterChoices?.[chapterIndex] ?? 0
+    const finalLevel = Math.min(2, endingLevel + (choiceBonus > 0 ? 1 : 0))
+    state.value.progress.chapterEndings[chapterIndex] = finalLevel
+  }
+
+  // GDD §6.5 三因子最终结局 getter
+  function getFinalEnding(): FinalEnding | null {
+    if (!state.value) return null
+    if (!state.value.progress.gameCompleted) return null
+    return calculateFinalEnding(state.value)
+  }
+
+  // GDD §6.5 单独暴露结局类型判定（用于 UI 预览）
+  function getEndingType(): FinalEndingType | null {
+    if (!state.value) return null
+    if (!state.value.progress.gameCompleted) return null
+    return determineEndingType(state.value)
+  }
+
+  // D.3 二周目继承：从旧存档提取继承快照
+  // GDD §6.7：二周目保留 archives + unlockedSkills，部分资源（coins/credits）按 50% 继承
+  function extractNewGamePlusSnapshot(): NewGamePlusState | null {
+    if (!state.value) return null
+    if (!state.value.progress.gameCompleted) return null
+
+    const oldNgPlusCount = state.value.progress.ngPlusCount ?? 0
+    const oldArchives = [...(state.value.progress.archives || [])]
+    const oldSkills = [...(state.value.player.unlockedSkills || [])]
+    const oldCoins = state.value.resources.coins || 0
+    const oldCredits = state.value.resources.credits || 0
+
+    return {
+      ngPlusCount: oldNgPlusCount + 1,
+      inheritedArchives: oldArchives,
+      inheritedSkills: oldSkills,
+      bonusCoins: Math.floor(oldCoins * 0.5),
+      bonusCredits: Math.floor(oldCredits * 0.5)
+    }
+  }
+
+  // D.3 二周目继承：开启二周目
+  // 决策 #16：使用 saveSave() 而非 saveApi.save()，统一走 store 乐观锁路径
+  // 流程：1) 校验 gameCompleted 2) 提取继承快照 3) 创建新存档（同 roleId）4) 注入继承项 5) 保存
+  async function startNewGamePlus(): Promise<boolean> {
+    if (!state.value) return false
+    if (!state.value.progress.gameCompleted) return false
+
+    const roleId = state.value.player.roleId
+    const snapshot = extractNewGamePlusSnapshot()
+    if (!snapshot) return false
+
+    // 创建同角色新存档（重置所有进度）
+    const newState = createDefaultGameState(roleId)
+
+    // 注入继承项
+    // 1. ngPlusCount 递增
+    newState.progress.ngPlusCount = snapshot.ngPlusCount
+    // 2. 保留图鉴收集（GDD §6.7）
+    newState.progress.archives = [...snapshot.inheritedArchives]
+    // 3. 保留已解锁技能（GDD §6.7：二周目保留技能解锁状态）
+    // 注意：createDefaultGameState 默认仅解锁 basic 技能；这里合并继承的技能
+    const mergedSkills = Array.from(new Set([
+      ...newState.player.unlockedSkills,
+      ...snapshot.inheritedSkills
+    ]))
+    newState.player.unlockedSkills = mergedSkills
+    // 4. 部分资源继承（50%）
+    newState.resources.coins = snapshot.bonusCoins
+    newState.resources.credits = snapshot.bonusCredits
+    newState.progress.chapterCredits = snapshot.bonusCredits
+
+    // 替换 state 并保存（stateVersion 保持当前值，走乐观锁更新）
+    state.value = newState
+    await saveSave()
+    return true
   }
 
   return {
@@ -277,6 +497,15 @@ export const useGameStore = defineStore('game', () => {
     setCombatState,
     setMonsterState,
     setChapterEnding,
-    getUnlockedSkillIds
+    getUnlockedSkillIds,
+    recordStudyTime,
+    recordChapterChoice,
+    getFinalEnding,
+    getEndingType,
+    extractNewGamePlusSnapshot,
+    startNewGamePlus,
+    getIdleMultiplier,
+    applyBuff,
+    getRevealBoost
   }
 })

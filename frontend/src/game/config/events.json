@@ -8,7 +8,8 @@
     "options": [
       { "text": "仔细阅读", "rewards": [{ "type": "exp", "amount": 30 }, { "type": "credits", "amount": 2 }], "consequence": null },
       { "text": "交给图书管理员", "rewards": [{ "type": "coins", "amount": 50 }], "consequence": null },
-      { "text": "偷偷带走", "rewards": [{ "type": "archive", "amount": 1, "itemId": "archive_secret_history" }], "consequence": "lose_5_credits" }
+      { "text": "偷偷带走", "rewards": [{ "type": "archive", "amount": 1, "itemId": "archive_secret_history" }], "consequence": "lose_5_credits" },
+      { "text": "♪ 辨识古籍真伪（灵感）", "rare": true, "rewards": [{ "type": "exp", "amount": 80 }, { "type": "archive", "amount": 1, "itemId": "archive_1927" }], "consequence": null }
     ]
   },
   {
@@ -28,7 +29,8 @@
     "trigger": "idle",
     "options": [
       { "text": "接受辅导", "rewards": [{ "type": "exp", "amount": 25 }], "consequence": null },
-      { "text": "自己研究", "rewards": [{ "type": "exp", "amount": 15 }, { "type": "credits", "amount": 1 }], "consequence": null }
+      { "text": "自己研究", "rewards": [{ "type": "exp", "amount": 15 }, { "type": "credits", "amount": 1 }], "consequence": null },
+      { "text": "♪ 请数学长高年级内幕（灵感）", "rare": true, "rewards": [{ "type": "exp", "amount": 40 }, { "type": "credits", "amount": 3 }, { "type": "item", "amount": 1, "itemId": "scroll_knowledge" }], "consequence": null }
     ]
   },
   {
@@ -92,7 +94,8 @@
     "options": [
       { "text": "触摸文物", "rewards": [{ "type": "exp", "amount": 80 }, { "type": "credits", "amount": 5 }], "consequence": "risk_damage" },
       { "text": "记录研究", "rewards": [{ "type": "exp", "amount": 40 }, { "type": "item", "amount": 1, "itemId": "scroll_history" }], "consequence": null },
-      { "text": "报告管理员", "rewards": [{ "type": "coins", "amount": 100 }], "consequence": null }
+      { "text": "报告管理员", "rewards": [{ "type": "coins", "amount": 100 }], "consequence": null },
+      { "text": "♪ 解读铭文隐藏含义（灵感）", "rare": true, "rewards": [{ "type": "exp", "amount": 120 }, { "type": "archive", "amount": 1, "itemId": "archive_1979" }], "consequence": null }
     ]
   },
   {
@@ -105,6 +108,148 @@
       { "text": "认真请教", "rewards": [{ "type": "exp", "amount": 100 }, { "type": "credits", "amount": 8 }], "consequence": null },
       { "text": "交换笔记", "rewards": [{ "type": "exp", "amount": 60 }, { "type": "item", "amount": 1, "itemId": "scroll_final" }], "consequence": null },
       { "text": "礼貌告别", "rewards": [{ "type": "exp", "amount": 30 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_library_close",
+    "name": "图书馆闭馆铃",
+    "description": "闭馆铃声响起，管理员开始催促离场。你还有一道题没算完。",
+    "trigger": "idle",
+    "options": [
+      { "text": "加急算完", "rewards": [{ "type": "exp", "amount": 35 }, { "type": "credits", "amount": 2 }], "consequence": "risk_fatigue" },
+      { "text": "明日再战", "rewards": [{ "type": "buff", "stat": "exp_rate", "value": 1.1, "duration": 600 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_sakura_notebook",
+    "name": "樱花落进手账",
+    "description": "一片樱花飘落在你的手账上，正好压在「同济百年」那一页。",
+    "trigger": "map",
+    "nodeId": "E-5",
+    "chapter": 2,
+    "options": [
+      { "text": "夹进书页", "rewards": [{ "type": "exp", "amount": 40 }, { "type": "item", "amount": 1, "itemId": "sakuraBookmark" }], "consequence": null },
+      { "text": "拍照留念", "rewards": [{ "type": "exp", "amount": 20 }, { "type": "credits", "amount": 1 }], "consequence": null },
+      { "text": "♪ 拍照上传图鉴并辨识品种（灵感）", "rare": true, "rewards": [{ "type": "exp", "amount": 50 }, { "type": "archive", "amount": 1, "itemId": "archive_1927" }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_volunteer",
+    "name": "校史馆志愿讲解",
+    "description": "校史馆招募志愿讲解员，讲解 120 周年校史专题。",
+    "trigger": "idle",
+    "options": [
+      { "text": "报名讲解", "rewards": [{ "type": "credits", "amount": 4 }, { "type": "item", "amount": 1, "itemId": "archive_120th" }], "consequence": null },
+      { "text": "旁听学习", "rewards": [{ "type": "exp", "amount": 30 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_lizhuang",
+    "name": "李庄旧事",
+    "description": "在档案柜深处发现一封从李庄寄出的旧信件，字迹斑驳。",
+    "trigger": "map",
+    "nodeId": "E-6",
+    "chapter": 2,
+    "options": [
+      { "text": "仔细辨读", "rewards": [{ "type": "exp", "amount": 90 }, { "type": "item", "amount": 1, "itemId": "archive_lizhuang_letter" }], "consequence": null },
+      { "text": "归档保存", "rewards": [{ "type": "credits", "amount": 6 }, { "type": "coins", "amount": 50 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_smartcar_rest",
+    "name": "智能车不肯休息",
+    "description": "实验室的智能车原型坚持要继续跑测试，灯光闪烁不止。",
+    "trigger": "idle",
+    "options": [
+      { "text": "陪它再跑一轮", "rewards": [{ "type": "exp", "amount": 45 }, { "type": "credits", "amount": 3 }], "consequence": "risk_fatigue" },
+      { "text": "强制关机", "rewards": [{ "type": "coins", "amount": 40 }, { "type": "buff", "stat": "resilience", "value": 1, "duration": 300 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_intern_change",
+    "name": "实习需求变更",
+    "description": "导师紧急通知：实习项目需求调整，需要重新评审方案。",
+    "trigger": "idle",
+    "options": [
+      { "text": "通宵调整方案", "rewards": [{ "type": "exp", "amount": 60 }, { "type": "credits", "amount": 5 }], "consequence": "risk_fatigue" },
+      { "text": "申请延期", "rewards": [{ "type": "exp", "amount": 25 }, { "type": "coins", "amount": 30 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_sakura_xiaoying",
+    "name": "樱花树下的约定",
+    "description": "樱花道尽头的长椅上，蜷缩着一只沉睡的粉色猫咪「小樱」。它的项圈上挂着一枚褪色的旧校徽，似乎是 1927 年的纪念品。它睁开眼睛，对你轻轻喵了一声。",
+    "trigger": "map",
+    "nodeId": "E-7",
+    "chapter": 2,
+    "prerequisite": "archive_1927",
+    "options": [
+      { "text": "蹲下来回应它", "rewards": [{ "type": "exp", "amount": 60 }, { "type": "item", "amount": 1, "itemId": "sakuraBookmark" }], "consequence": "unlock_sakura_quest" },
+      { "text": "拍下它的照片", "rewards": [{ "type": "exp", "amount": 30 }, { "type": "credits", "amount": 2 }], "consequence": null },
+      { "text": "♪ 听懂它的低语（灵感）", "rare": true, "rewards": [{ "type": "exp", "amount": 100 }, { "type": "archive", "amount": 1, "itemId": "archive_sakura" }], "consequence": "unlock_sakura_memory" }
+    ]
+  },
+  {
+    "eventId": "evt_sakura_hairpin",
+    "name": "寻找樱花发簪",
+    "description": "小樱说它的樱花发簪掉在了图书馆外广场的花坛里。你需要帮忙找回这枚承载着 1927 年记忆的发簪。",
+    "trigger": "map",
+    "nodeId": "E-8",
+    "chapter": 2,
+    "prerequisite": "unlock_sakura_quest",
+    "options": [
+      { "text": "在花坛里翻找", "rewards": [{ "type": "exp", "amount": 50 }, { "type": "coins", "amount": 30 }], "consequence": null },
+      { "text": "询问路过的同学", "rewards": [{ "type": "exp", "amount": 35 }, { "type": "credits", "amount": 2 }], "consequence": null },
+      { "text": "♪ 顺着樱花飘落的方向寻找（灵感）", "rare": true, "rewards": [{ "type": "exp", "amount": 80 }, { "type": "item", "amount": 1, "itemId": "sakuraHairpin" }, { "type": "archive", "amount": 1, "itemId": "archive_sakura" }], "consequence": "found_hairpin" }
+    ]
+  },
+  {
+    "eventId": "evt_sakura_memory",
+    "name": "樱花记忆",
+    "description": "你将樱花发簪还给小樱。它轻轻一嗅，项圈上的旧校徽开始发光——一段被时间封存的 1927 年国立同济记忆在你眼前展开：师生同舟共济，在樱花树下许下百年之约。",
+    "trigger": "map",
+    "nodeId": "E-9",
+    "chapter": 2,
+    "prerequisite": "found_hairpin",
+    "options": [
+      { "text": "认真记住这段记忆", "rewards": [{ "type": "exp", "amount": 150 }, { "type": "archive", "amount": 1, "itemId": "archive_sakura" }, { "type": "credits", "amount": 5 }], "consequence": "complete_sakura_branch" },
+      { "text": "与小樱合影留念", "rewards": [{ "type": "exp", "amount": 80 }, { "type": "item", "amount": 1, "itemId": "sakuraHairpin" }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_ch4_1907",
+    "name": "校史起点·1907",
+    "description": "校庆展览的第一件展品：1907 年德文医学堂的建校章程。泛黄的纸页上写着宝隆医生的寄语。",
+    "trigger": "map",
+    "nodeId": "E-10",
+    "chapter": 4,
+    "options": [
+      { "text": "仔细研读章程", "rewards": [{ "type": "exp", "amount": 80 }, { "type": "archive", "amount": 1, "itemId": "archive_1907" }], "consequence": null },
+      { "text": "拍照存档", "rewards": [{ "type": "exp", "amount": 40 }, { "type": "credits", "amount": 3 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_ch4_2000",
+    "name": "合并纪事·2000",
+    "description": "校史馆一角展出了 2000 年合并上海铁道大学时的合并协议。",
+    "trigger": "map",
+    "nodeId": "E-11",
+    "chapter": 4,
+    "options": [
+      { "text": "阅读合并协议", "rewards": [{ "type": "exp", "amount": 90 }, { "type": "archive", "amount": 1, "itemId": "archive_2000" }], "consequence": null },
+      { "text": "采访老校友", "rewards": [{ "type": "exp", "amount": 60 }, { "type": "credits", "amount": 4 }], "consequence": null }
+    ]
+  },
+  {
+    "eventId": "evt_ch4_double_first",
+    "name": "双一流展板",
+    "description": "校庆广场上立着双一流建设成果展板，展示 2017 与 2022 两轮入选的学科名单。",
+    "trigger": "map",
+    "nodeId": "E-12",
+    "chapter": 4,
+    "options": [
+      { "text": "认真学习双一流成果", "rewards": [{ "type": "exp", "amount": 100 }, { "type": "archive", "amount": 1, "itemId": "archive_2017" }, { "type": "archive", "amount": 1, "itemId": "archive_2022" }], "consequence": null },
+      { "text": "随便看看", "rewards": [{ "type": "exp", "amount": 30 }], "consequence": null }
     ]
   }
 ]

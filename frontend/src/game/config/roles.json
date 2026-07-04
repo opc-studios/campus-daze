@@ -6,9 +6,32 @@
     "combatRole": "summon_spirit",
     "mainAttr": "knowledge",
     "baseAttrs": { "knowledge": 8, "practice": 5, "insight": 6, "resilience": 4 },
-    "combatStats": { "critRate": 0.05, "critDamage": 1.5, "evasionRate": 0.05, "accuracyRate": 0.95 },
+    "combatStats": { "critRate": 0, "critDamage": 1.5, "evasionRate": 0, "accuracyRate": 1.0 },
     "description": "温柔而坚定的学术新星，擅长召唤精灵协战",
-    "quote": "知识是最强大的魔法"
+    "quote": "知识是最强大的魔法",
+    "combat": "召唤流：召唤学风精灵协同作战，精灵继承玩家 60% 属性，可分担伤害与辅助输出。适合稳健推图，对 Boss 持久战表现优异。",
+    "weapon": "紫晶治疗杖（主）/ 樱花短杖 / 开题星杖——三种法杖可切换弹射物形态：紫晶（远程辅助）、樱花（扩散范围）、开题（高速连发）。",
+    "cat": "白色长毛精灵猫，紫色星形瞳孔，尾巴尖端有星光闪烁。猫形下移动速度提升 20%，但攻击力降低。",
+    "actionGuide": "idle 站立 / walk 行走 / attack 释放法杖弹射物 / hit 受击闪红 / death 倒地 / transform 双形态切换 / catRun 猫形奔跑 / catJump 猫形跳跃",
+    "highlightQuotes": [
+      "我的精灵，去守护同伴吧——知识从不是为了伤害。",
+      "星光不灭，希望不熄。这就是我执笔的理由。",
+      "若学问有终点，我愿与你们一同走到那里。"
+    ],
+    "voiceLines": {
+      "idle": [
+        "今天的图书馆阳光真好，要不要一起读会儿书？",
+        "精灵们说，它们喜欢这里安静的气息。"
+      ],
+      "event": [
+        "这个选择……让我再想想，灵感在悄悄告诉我答案。",
+        "我记得在文献里见过类似的记载，或许能帮上忙。"
+      ],
+      "combat": [
+        "精灵们，与我并肩！",
+        "以知识之名，星辉降临！"
+      ]
+    }
   },
   {
     "roleId": "ayu",
@@ -17,9 +40,32 @@
     "combatRole": "dps_strike",
     "mainAttr": "practice",
     "baseAttrs": { "knowledge": 4, "practice": 8, "insight": 5, "resilience": 6 },
-    "combatStats": { "critRate": 0.08, "critDamage": 1.6, "evasionRate": 0.05, "accuracyRate": 0.95 },
+    "combatStats": { "critRate": 0, "critDamage": 1.5, "evasionRate": 0, "accuracyRate": 1.0 },
     "description": "热血少年，越战越勇，连击伤害递增",
-    "quote": "战斗让我更强大"
+    "quote": "战斗让我更强大",
+    "combat": "连击流：每次连续命中叠加 5% 伤害（最多 5 层），断层后衰减。适合中长线作战，对群体怪有递增收益。",
+    "weapon": "实习工牌短剑——近战连击武器，普攻为双段斩击，第三段附带击退效果。",
+    "cat": "橘色虎斑猫，金黄眼瞳，肌肉线条明显。猫形下暴击率额外 +5%，但防御降低。",
+    "actionGuide": "idle 站立 / walk 行走 / attack 双段斩击 / hit 受击后退 / death 倒地 / transform 双形态切换 / catRun 猫形奔跑 / catJump 猫形跳跃",
+    "highlightQuotes": [
+      "再来！这点痛算什么，我已经摸到节奏了！",
+      "我不聪明，但我知道——只要不停下，就一定能追上你们。",
+      "这一刀，是为昨天那个跌倒的我砍的！"
+    ],
+    "voiceLines": {
+      "idle": [
+        "嘿，要不要去操场跑两圈？我请你喝运动饮料。",
+        "实习报告还没写完……算了，先打两把再说！"
+      ],
+      "event": [
+        "这事儿交给我！我最擅长冲在前头了。",
+        "别犹豫了，干了再说，大不了重来！"
+      ],
+      "combat": [
+        "热身结束，接下来是真家伙！",
+        "连击不会断，因为我不想输！"
+      ]
+    }
   },
   {
     "roleId": "zhixia",
@@ -28,9 +74,32 @@
     "combatRole": "dps_burst",
     "mainAttr": "insight",
     "baseAttrs": { "knowledge": 6, "practice": 4, "insight": 8, "resilience": 5 },
-    "combatStats": { "critRate": 0.15, "critDamage": 2.0, "evasionRate": 0.05, "accuracyRate": 0.95 },
+    "combatStats": { "critRate": 0, "critDamage": 2.0, "evasionRate": 0, "accuracyRate": 1.0 },
     "description": "冷静理性，暴击率极高，一击必杀",
-    "quote": "专注是成功的钥匙"
+    "quote": "专注是成功的钥匙",
+    "combat": "暴击流：基础暴击率 15% + 暴击伤害 200%，触发暴击时附带 30% 真实伤害。适合爆发秒杀，对单体 Boss 收益最高。",
+    "weapon": "实验室记录笔——远程投掷武器，普攻为笔尖飞镖，暴击时附带墨水印记（持续 3 秒减速）。",
+    "cat": "银灰色英短，蓝色眼瞳，神情高冷。猫形下命中率额外 +5%，但暴击伤害降低。",
+    "actionGuide": "idle 站立 / walk 行走 / attack 投掷笔尖 / hit 受击闪避 / death 倒地 / transform 双形态切换 / catRun 猫形奔跑 / catJump 猫形跳跃",
+    "highlightQuotes": [
+      "一击足够。多余的招式只是噪声。",
+      "我看到的不是敌人，是它防御里的那道裂缝。",
+      "冷静不是冷漠——我只是把热血留给了关键时刻。"
+    ],
+    "voiceLines": {
+      "idle": [
+        "……别吵，我在算这道题的第三种解法。",
+        "数据不会说谎，但人会。所以请给我事实。"
+      ],
+      "event": [
+        "从概率上看，这个选择的成功率更高。听我的。",
+        "我先观察一下，不要急着动手。"
+      ],
+      "combat": [
+        "锁定弱点——结束。",
+        "墨色已落，无处可逃。"
+      ]
+    }
   },
   {
     "roleId": "jiangxun",
@@ -39,9 +108,32 @@
     "combatRole": "dps_aoe",
     "mainAttr": "insight",
     "baseAttrs": { "knowledge": 5, "practice": 6, "insight": 8, "resilience": 4 },
-    "combatStats": { "critRate": 0.08, "critDamage": 1.5, "evasionRate": 0.10, "accuracyRate": 0.95 },
+    "combatStats": { "critRate": 0, "critDamage": 1.5, "evasionRate": 0, "accuracyRate": 1.0 },
     "description": "敏捷刺客，对高防敌人造成额外伤害",
-    "quote": "没有我突破不了的防御"
+    "quote": "没有我突破不了的防御",
+    "combat": "穿透流：攻击无视目标 30% 防御，对高防目标附加 15% 最大生命值真实伤害（最多 200）。适合攻坚高防 Boss。",
+    "weapon": "图书馆借阅卡匕首——近战穿透武器，普攻为三段刺击，第三段无视护甲。",
+    "cat": "黑色缅因猫，绿色眼瞳，体型修长。猫形下闪避率额外 +10%，但生命值降低。",
+    "actionGuide": "idle 站立 / walk 行走 / attack 三段刺击 / hit 受击翻滚 / death 倒地 / transform 双形态切换 / catRun 猫形奔跑 / catJump 猫形跳跃",
+    "highlightQuotes": [
+      "你的防线在我眼里，只是一层待破的纸。",
+      "我走暗处，不是因为我怕——是因为那里没人能拦住我。",
+      "这一刺，是替那些被你挡住去路的人。"
+    ],
+    "voiceLines": {
+      "idle": [
+        "……图书馆后排有个位置，光线正好。别告诉别人。",
+        "我习惯先记下退路，再决定要不要进去。"
+      ],
+      "event": [
+        "这里有破绽，我先进去探探。",
+        "别出声，跟紧我——前面有人。"
+      ],
+      "combat": [
+        "三段，足够。",
+        "穿透，然后离开。"
+      ]
+    }
   },
   {
     "roleId": "laodeng",
@@ -50,8 +142,31 @@
     "combatRole": "tank_heavy",
     "mainAttr": "resilience",
     "baseAttrs": { "knowledge": 5, "practice": 6, "insight": 4, "resilience": 8 },
-    "combatStats": { "critRate": 0.05, "critDamage": 1.5, "evasionRate": 0.03, "accuracyRate": 0.95 },
+    "combatStats": { "critRate": 0, "critDamage": 1.5, "evasionRate": 0, "accuracyRate": 1.0 },
     "description": "坚韧坦克，反弹伤害，越打越硬",
-    "quote": "来吧，让我看看你的实力"
+    "quote": "来吧，让我看看你的实力",
+    "combat": "反震流：受击时反弹 25% 伤害（最大 150），同时获得 5% 减伤（最多 5 层）。适合抗伤推图，对高频攻击怪有奇效。",
+    "weapon": "混凝土教材盾——重装盾牌，普攻为盾击，受击时触发反震光环。",
+    "cat": "灰白虎斑猫，琥珀色眼瞳，体格壮硕。猫形下生命值额外 +10%，但移动速度降低。",
+    "actionGuide": "idle 站立 / walk 行走 / attack 盾击 / hit 受击格挡 / death 倒地 / transform 双形态切换 / catRun 猫形奔跑 / catJump 猫形跳跃",
+    "highlightQuotes": [
+      "你们先走，这面墙我来扛。",
+      "我老吗？呵，等你的膝盖也熬过十年混凝土，再来说这话。",
+      "护住身后的人——这就是盾存在的意义。"
+    ],
+    "voiceLines": {
+      "idle": [
+        "年轻人，慢点跑，路还长着呢。",
+        "这块混凝土我扛了十年，今天还能再扛一程。"
+      ],
+      "event": [
+        "这事儿急不来，咱们稳着点办。",
+        "别怕，有我在前面，你们只管后面的事。"
+      ],
+      "combat": [
+        "来啊，让老头子热热身！",
+        "打我——别想碰我身后的人。"
+      ]
+    }
   }
 ]

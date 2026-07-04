@@ -16,6 +16,17 @@ export interface RefreshRequest {
   refresh_token: string
 }
 
+export interface SendCodeRequest {
+  username: string
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  username: string
+  code: string
+  new_password: string
+}
+
 export interface TokenResponse {
   access_token: string
   refresh_token: string
@@ -52,7 +63,15 @@ export const authApi = {
     return response.data
   },
 
-  logout: async (): Promise<void> => {
-    await apiClient.post('/api/auth/logout')
+  logout: async (refreshToken: string): Promise<void> => {
+    await apiClient.post('/api/auth/logout', { refresh_token: refreshToken })
+  },
+
+  sendResetCode: async (data: SendCodeRequest): Promise<void> => {
+    await apiClient.post('/api/auth/password/send-code', data)
+  },
+
+  resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
+    await apiClient.post('/api/auth/password/reset', data)
   }
 }

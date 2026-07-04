@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* === C.3 移动端适配 === */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+/* 游戏容器禁止默认手势，避免移动端滚动/缩放干扰 */
+#game-container {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* 游戏风格UI组件 */
 .game-card-neon {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 250, 245, 0.95) 100%);
@@ -168,16 +194,122 @@
   .game-card-neon {
     padding: 12px;
   }
-  
+
   .stat-item {
     padding: 6px 0;
   }
-  
+
   .stat-label {
     font-size: 12px;
   }
-  
+
   .stat-value {
     font-size: 14px;
   }
+}
+
+/* === HomeView 动效 === */
+.chapter-transition {
+  transition: background 0.6s ease;
+}
+
+@keyframes chapterTitleFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chapter-title-fade {
+  animation: chapterTitleFade 0.5s ease-out;
+}
+
+@keyframes hotspotEnter {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+.hotspot-enter {
+  animation: hotspotEnter 0.4s ease-out backwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.hotspot-delay-0 { animation-delay: 0s; }
+.hotspot-delay-1 { animation-delay: 0.1s; }
+.hotspot-delay-2 { animation-delay: 0.2s; }
+.hotspot-delay-3 { animation-delay: 0.3s; }
+.hotspot-delay-4 { animation-delay: 0.4s; }
+.hotspot-delay-5 { animation-delay: 0.5s; }
+.hotspot-delay-6 { animation-delay: 0.6s; }
+
+@keyframes catBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.cat-bounce {
+  animation: catBounce 0.2s ease-in-out;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes bossReadyPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.boss-ready-pulse {
+  animation: bossReadyPulse 1.2s ease-in-out infinite;
+}
+
+/* === C.3 移动端响应式断点 === */
+@media (max-width: 768px) {
+  /* HUD 顶部按钮组：紧凑布局 */
+  .game-button {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 极小屏：进一步缩小 HUD */
+  .game-card-neon {
+    padding: 10px;
+  }
+  .stat-panel {
+    padding: 10px;
+  }
+  .game-button {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* === C.3 虚拟摇杆样式 === */
+.virtual-joystick {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 70%, transparent 100%);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 30;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.virtual-joystick__knob {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFB7C5 0%, #FF6B9D 100%);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: transform 0.05s linear;
+  pointer-events: none;
+}
+
+.virtual-joystick--hidden {
+  display: none;
 }

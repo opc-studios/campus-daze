@@ -1,7 +1,7 @@
 [
   { "skillId": "lina_basic", "roleId": "lina", "name": "基础攻击", "type": "basic", "cooldown": 0, "multiplier": 1.0, "effect": null, "unavoidable": false, "unlockCondition": null },
   { "skillId": "lina_s1", "roleId": "lina", "name": "学风冲击", "type": "active", "cooldown": 3, "multiplier": 1.5, "effect": null, "unavoidable": false, "unlockCondition": "chapter_1" },
-  { "skillId": "lina_s2", "roleId": "lina", "name": "精灵召唤", "type": "active", "cooldown": 5, "multiplier": 0.8, "effect": { "type": "summon", "duration": 3, "damage": 20 }, "unavoidable": false, "unlockCondition": "credits_8" },
+  { "skillId": "lina_s2", "roleId": "lina", "name": "精灵召唤", "type": "active", "cooldown": 5, "multiplier": 0.8, "effect": { "type": "summon", "duration": 3, "useSummonFormula": true }, "unavoidable": false, "unlockCondition": "credits_8" },
   { "skillId": "lina_s3", "roleId": "lina", "name": "知识风暴", "type": "active", "cooldown": 8, "multiplier": 2.5, "effect": null, "unavoidable": false, "unlockCondition": "chapter_1_cleared" },
   { "skillId": "lina_s4", "roleId": "lina", "name": "学术共鸣", "type": "active", "cooldown": 10, "multiplier": 3.0, "effect": { "type": "buff", "stat": "atk", "value": 0.2, "duration": 3 }, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
   { "skillId": "lina_s5", "roleId": "lina", "name": "智慧之光", "type": "active", "cooldown": 12, "multiplier": 4.0, "effect": null, "unavoidable": false, "unlockCondition": "chapter_3_cleared" },
@@ -32,5 +32,20 @@
   { "skillId": "laodeng_s2", "roleId": "laodeng", "name": "混凝土反震", "type": "active", "cooldown": 5, "multiplier": 0.5, "effect": { "type": "reflect", "value": 0.3, "duration": 3 }, "unavoidable": false, "unlockCondition": "credits_8" },
   { "skillId": "laodeng_s3", "roleId": "laodeng", "name": "铁壁", "type": "active", "cooldown": 8, "multiplier": 0, "effect": { "type": "shield", "value": 50 }, "unavoidable": false, "unlockCondition": "chapter_1_cleared" },
   { "skillId": "laodeng_s4", "roleId": "laodeng", "name": "地震波", "type": "active", "cooldown": 10, "multiplier": 2.0, "effect": null, "unavoidable": false, "unlockCondition": "chapter_2_cleared" },
-  { "skillId": "laodeng_s5", "roleId": "laodeng", "name": "不动如山", "type": "active", "cooldown": 12, "multiplier": 0, "effect": { "type": "buff", "stat": "def", "value": 1.0, "duration": 5 }, "unavoidable": false, "unlockCondition": "chapter_3_cleared" }
+  { "skillId": "laodeng_s5", "roleId": "laodeng", "name": "不动如山", "type": "active", "cooldown": 12, "multiplier": 0, "effect": { "type": "buff", "stat": "def", "value": 1.0, "duration": 5 }, "unavoidable": false, "unlockCondition": "chapter_3_cleared" },
+
+  { "skillId": "lina_p1", "roleId": "lina", "name": "学风共鸣", "type": "passive", "trigger": "on_summon_present", "effect": { "kind": "atk_percent", "value": 0.15 }, "unlockCondition": null },
+  { "skillId": "lina_p2", "roleId": "lina", "name": "精灵亲和", "type": "passive", "trigger": "static", "effect": { "kind": "summon_formula" }, "unlockCondition": null },
+
+  { "skillId": "ayu_p1", "roleId": "ayu", "name": "愈战愈勇", "type": "passive", "trigger": "on_kill", "effect": { "kind": "stack_atk_per_kill", "value": 0.08, "maxStacks": 5 }, "unlockCondition": null },
+  { "skillId": "ayu_p2", "roleId": "ayu", "name": "破甲连击", "type": "passive", "trigger": "on_attack_hit", "effect": { "kind": "armor_pen_on_combo", "threshold": 2, "value": 0.3 }, "unlockCondition": null },
+
+  { "skillId": "zhixia_p1", "roleId": "zhixia", "name": "学术专注", "type": "passive", "trigger": "on_combat_start", "effect": { "kind": "crit_rate_bonus", "value": 0.15 }, "unlockCondition": null },
+  { "skillId": "zhixia_p2", "roleId": "zhixia", "name": "公式记忆", "type": "passive", "trigger": "on_skill_cast", "effect": { "kind": "cooldown_reduction", "threshold": 3, "reductionPercent": 0.3 }, "unlockCondition": null },
+
+  { "skillId": "jiangxun_p1", "roleId": "jiangxun", "name": "风之眷顾", "type": "passive", "trigger": "on_combat_start", "effect": { "kind": "action_interval_percent", "value": -0.08 }, "unlockCondition": null },
+  { "skillId": "jiangxun_p2", "roleId": "jiangxun", "name": "穿透箭术", "type": "passive", "trigger": "on_attack_hit", "effect": { "kind": "damage_bonus_vs_high_def", "value": 0.15 }, "unlockCondition": null },
+
+  { "skillId": "laodeng_p1", "roleId": "laodeng", "name": "钢筋铁骨", "type": "passive", "trigger": "on_attacked", "effect": { "kind": "heavy_mitigation", "threshold": 0.25, "reductionPercent": 0.3, "value": 3 }, "unlockCondition": null },
+  { "skillId": "laodeng_p2", "roleId": "laodeng", "name": "混凝土反震", "type": "passive", "trigger": "on_attacked", "effect": { "kind": "reflect_by_def", "value": 0.3 }, "unlockCondition": null }
 ]

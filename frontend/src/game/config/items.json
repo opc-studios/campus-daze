@@ -14,5 +14,9 @@
   { "itemId": "explore_compass", "name": "探索罗盘", "description": "探索时佩戴，揭示范围 +20%", "category": "tool", "slot": "explore", "effect": { "type": "reveal_boost", "value": 1.2 }, "source": "shop" },
   { "itemId": "lucky_charm", "name": "幸运符", "description": "暴击率 +5%", "category": "souvenir", "effect": { "type": "buff", "stat": "critRate", "value": 0.05 }, "source": "event" },
   { "itemId": "energy_drink", "name": "能量饮料", "description": "立即恢复 30 HP", "category": "consumable", "effect": { "type": "heal", "amount": 30 }, "source": "shop" },
-  { "itemId": "shield_scroll", "name": "护盾卷轴", "description": "下次战斗获得 +50 护盾", "category": "consumable", "effect": { "type": "shield", "amount": 50 }, "source": "event" }
+  { "itemId": "shield_scroll", "name": "护盾卷轴", "description": "下次战斗获得 +50 护盾", "category": "consumable", "effect": { "type": "shield", "amount": 50 }, "source": "event" },
+  { "itemId": "sakuraBookmark", "name": "樱花书签", "description": "GDD §4.1/§6.2 樱花季限定纪念品。持有后事件稀有选项出现概率 +5%。", "category": "souvenir", "effect": { "type": "rare_option_boost", "value": 0.05 }, "source": "event" },
+  { "itemId": "sakuraHairpin", "name": "樱花发簪", "description": "GDD §6.2 小樱的旧物。承载 1927 年国立同济的记忆，集齐后可解锁隐藏图鉴。", "category": "souvenir", "effect": null, "source": "event" },
+  { "itemId": "archive_120th", "name": "120 周年校庆纪念章", "description": "校史馆志愿讲解员纪念章，记载 120 周年校庆专题。", "category": "souvenir", "effect": null, "source": "event" },
+  { "itemId": "archive_lizhuang_letter", "name": "李庄旧信件", "description": "抗战时期从李庄寄出的旧信件，字迹斑驳。", "category": "souvenir", "effect": null, "source": "event" }
 ]

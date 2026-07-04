@@ -6,6 +6,9 @@ export type CombatStateType = 'idle' | 'init' | 'running' | 'skipped' | 'end' | 
 export type CombatResultType = 'win' | 'lose' | 'flee'
 export type MonsterStateType = 'patrol' | 'alert' | 'chase' | 'combat' | 'cleared' | 'return'
 
+// GDD §6.5 三因子最终结局类型
+export type FinalEndingType = 'perfect_memory' | 'memory_remaining' | 'standard'
+
 export interface Position {
   x: number
   y: number
@@ -57,6 +60,30 @@ export interface ProgressState {
   seenEvents: string[]
   archives: string[]
   chapterEndings?: number[]
+  // GDD §6.6 通关统计字段
+  studyTimeSeconds?: number
+  exploreCount?: number
+  eventTriggerCount?: number
+  // GDD §6.5 三因子之一：每章关键事件选择索引
+  chapterChoices?: number[]
+  // 通关标记
+  gameCompleted?: boolean
+  // D.3 二周目继承：周目数（0=首周目，每次开启二周目递增）
+  ngPlusCount?: number
+}
+
+// D.3 二周目继承快照（开启二周目时从旧存档提取的继承数据）
+export interface NewGamePlusState {
+  // 周目数（新存档写入 ngPlusCount = old + 1）
+  ngPlusCount: number
+  // 继承的校史图鉴 ID 列表（GDD §6.7：二周目保留图鉴收集）
+  inheritedArchives: string[]
+  // 继承的已解锁技能 ID 列表（GDD §6.7：保留技能解锁状态）
+  inheritedSkills: string[]
+  // 继承的初始校园币（部分资源继承，例如 oldCoins * 0.5）
+  bonusCoins: number
+  // 继承的初始学分（部分资源继承，例如 oldCredits * 0.5）
+  bonusCredits: number
 }
 
 export interface MapState {

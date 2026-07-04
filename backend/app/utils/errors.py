@@ -2,10 +2,11 @@ from fastapi import HTTPException, status
 
 
 class AuthInvalidCredentials(HTTPException):
-    def __init__(self):
+    def __init__(self, detail: str = None):
+        message = detail or "用户名或密码错误"
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error_code": "AUTH_INVALID_CREDENTIALS", "message": "用户名或密码错误"},
+            detail={"error_code": "AUTH_INVALID_CREDENTIALS", "message": message},
         )
 
 
@@ -34,10 +35,11 @@ class AuthInvalidToken(HTTPException):
 
 
 class AuthRefreshExpired(HTTPException):
-    def __init__(self):
+    def __init__(self, detail: str = None):
+        message = detail or "刷新令牌过期"
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error_code": "AUTH_REFRESH_EXPIRED", "message": "刷新令牌过期"},
+            detail={"error_code": "AUTH_REFRESH_EXPIRED", "message": message},
         )
 
 

@@ -39,12 +39,16 @@ def validate_skills(skills):
     
     for role_id, role_skills in skills_by_role.items():
         print(f"\n{role_id}:")
-        for skill in sorted(role_skills, key=lambda x: x['cooldown']):
-            print(f"  {skill['name']}: 倍率={skill['multiplier']}, CD={skill['cooldown']}")
-            
-            if skill['type'] == 'basic' and skill['multiplier'] != 1.0:
+        # 被动技能无 cooldown 字段，使用 .get 容错
+        for skill in sorted(role_skills, key=lambda x: x.get('cooldown', 0)):
+            skill_type = skill.get('type', 'unknown')
+            cd = skill.get('cooldown', '-')
+            mult = skill.get('multiplier', '-')
+            print(f"  {skill['name']} ({skill_type}): 倍率={mult}, CD={cd}")
+
+            if skill_type == 'basic' and skill.get('multiplier') != 1.0:
                 print(f"    ⚠️ 警告: 普攻倍率不是1.0")
-            if skill['type'] == 'active' and skill['multiplier'] < 1.0:
+            if skill_type == 'active' and skill.get('multiplier', 1.0) < 1.0:
                 print(f"    ⚠️ 警告: 主动技能倍率过低")
 
 def validate_monsters(monsters):
@@ -106,6 +110,41 @@ def validate_rewards(monsters):
     if total_credits < 120:
         print(f"  ⚠️ 警告: 总学分不足以达到120毕业要求")
 
+def validate_combat_duration_nfr(monsters):
+    """
+    R 战斗时长 NFR 校验（GDD §3.2.2）：
+    - 普通怪物 TTK: 10-35 秒
+    - Boss TTK: 45-75 秒
+    估算模型：DPS = max(player_atk * 0.6 - monster_def * 0.3, 5)
+    """
+    print("\n=== 战斗时长 NFR 验证（GDD §3.2.2）===")
+    # 各章节假设玩家 ATK（中位养成水平）
+    chapter_player_atk = {1: 30, 2: 45, 3: 60, 4: 75}
+    nfr_min = {'normal': 10, 'boss': 45}
+    nfr_max = {'normal': 35, 'boss': 75}
+
+    violations = 0
+    for monster in monsters:
+        chapter = monster['chapter']
+        is_boss = monster.get('isBoss', False)
+        kind = 'boss' if is_boss else 'normal'
+        player_atk = chapter_player_atk.get(chapter, 30)
+        monster_def = monster.get('def', 0)
+        monster_hp = monster.get('hp', 0)
+
+        # 简化 DPS 估算：玩家攻击力 * 0.6（含技能倍率与 CD 综合平均）减去 30% 护甲穿透后剩余护甲抵消
+        dps = max(player_atk * 0.6 - monster_def * 0.3, 5)
+        ttk = monster_hp / dps
+
+        status = '✓' if (nfr_min[kind] <= ttk <= nfr_max[kind]) else '⚠️ 超出 NFR'
+        if not (nfr_min[kind] <= ttk <= nfr_max[kind]):
+            violations += 1
+        prefix = '[BOSS] ' if is_boss else ''
+        print(f"  {prefix}{monster['name']} (Ch{chapter}): HP={monster_hp}, DEF={monster_def}, DPS≈{dps:.1f}, TTK≈{ttk:.1f}s [{nfr_min[kind]}-{nfr_max[kind]}] {status}")
+
+    print(f"\n  违规数: {violations}/{len(monsters)}")
+
+
 def main():
     config_dir = Path(__file__).parent.parent.parent / 'frontend' / 'src' / 'game' / 'config'
     
@@ -123,6 +162,7 @@ def main():
     validate_monsters(monsters)
     validate_chapters(chapters)
     validate_rewards(monsters)
+    validate_combat_duration_nfr(monsters)
     
     print("\n=== 验证完成 ===")
 

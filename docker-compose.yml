@@ -23,31 +23,19 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: campus_daze_backend
     environment:
-      DATABASE_URL: mysql+pymysql://appuser:apppassword@mysql:3306/tongzhou_meow
+      DATABASE_URL: mysql+aiomysql://appuser:apppassword@mysql:3306/tongzhou_meow?charset=utf8mb4
       JWT_SECRET_KEY: your-secret-key-change-in-production
-      CORS_ORIGINS: '["http://localhost", "http://localhost:80"]'
+      CORS_ORIGINS: '["http://localhost", "http://localhost:8000", "http://127.0.0.1"]'
+      STATIC_DIST_DIR: /app/static_dist
     ports:
       - "8000:8000"
     depends_on:
       mysql:
         condition: service_healthy
-    networks:
-      - app_network
-    restart: unless-stopped
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: campus_daze_frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
     networks:
       - app_network
     restart: unless-stopped

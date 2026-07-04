@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import Response
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.database import get_db
 from app.models.game_image import GameImage
 from app.utils.errors import ImageNotFound
@@ -14,17 +15,21 @@ async def get_image(
     entity_type: str,
     entity_key: str,
     type: str = "portrait",
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
-    result = db.execute(
+    """读取 game_images 表的二进制图片并返回。
+
+    项目约束：美术资源存于 MySQL game_images 表（MEDIUMBLOB ≤16MB），
+    大地图背景走前端静态目录；不引入外部对象存储。
+    """
+    result = await db.execute(
         select(GameImage).where(
             GameImage.entity_type == entity_type,
             GameImage.entity_key == entity_key,
-            GameImage.image_type == type,
+            GameImage.image_type == image_type_safe(type),
         )
     )
     image = result.scalar_one_or_none()
-
     if not image:
         raise ImageNotFound()
 
@@ -33,3 +38,9 @@ async def get_image(
         media_type=image.mime_type,
         headers={"Cache-Control": "public, max-age=86400"},
     )
+
+
+def image_type_safe(raw: str) -> str:
+    """白名单过滤 image_type，防止注入。"""
+    allow = {"portrait", "icon", "cat_form", "sprite", "map", "poster", "boss"}
+    return raw if raw in allow else "portrait"

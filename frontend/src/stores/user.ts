@@ -55,7 +55,16 @@ export const useUserStore = defineStore('user', () => {
     setAuth(data)
   }
 
-  const logout = () => {
+  const logout = async () => {
+    const rt = refreshToken.value
+    if (rt) {
+      try {
+        await authApi.logout(rt)
+      } catch (e) {
+        // 即使后端调用失败也清本地状态
+        console.warn('logout API failed, clearing local state anyway', e)
+      }
+    }
     token.value = null
     refreshToken.value = null
     userId.value = null

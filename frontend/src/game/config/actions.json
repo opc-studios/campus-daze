@@ -1,0 +1,10 @@
+[
+  { "id": "idle", "label": "待机", "hint": "呼吸 / 站立", "row": 0, "fps": 7, "repeat": -1, "frames": [0, 1, 2, 3] },
+  { "id": "walk", "label": "行走", "hint": "八向移动复用", "row": 1, "fps": 12, "repeat": -1, "frames": [0, 1, 2, 3, 4, 5] },
+  { "id": "attack", "label": "施法 / 攻击", "hint": "法杖飞射物", "row": 2, "fps": 18, "repeat": 0, "frames": [0, 1, 2, 3] },
+  { "id": "hit", "label": "受击", "hint": "短硬直", "row": 3, "fps": 11, "repeat": 0, "frames": [0, 1, 2, 3] },
+  { "id": "death", "label": "倒地", "hint": "倒地保留", "row": 4, "fps": 9, "repeat": 0, "frames": [0, 1, 2, 3, 4, 5] },
+  { "id": "transform", "label": "人猫互变", "hint": "变身预留", "row": 5, "fps": 20, "repeat": 0, "frames": [0, 1, 2, 3, 4, 5, 6, 7] },
+  { "id": "catRun", "label": "猫形移动", "hint": "探索移动", "row": 6, "fps": 16, "repeat": -1, "frames": [0, 1, 2, 3] },
+  { "id": "catJump", "label": "猫形跳跃", "hint": "穿越障碍预留", "row": 7, "fps": 16, "repeat": 0, "frames": [0, 1, 2, 3, 4, 5] }
+]

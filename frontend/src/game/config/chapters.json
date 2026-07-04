@@ -1,7 +1,7 @@
 [
-  { "chapterId": 0, "name": "序章：初入同济", "mapId": "ch0_map1", "creditMilestone": 0, "unlockCondition": null, "bossId": null, "description": "欢迎来到同济大学" },
-  { "chapterId": 1, "name": "第一章：图书馆迷踪", "mapId": "ch1_map1", "creditMilestone": 20, "unlockCondition": null, "bossId": "boss_ai_prof", "description": "在图书馆中寻找真相" },
-  { "chapterId": 2, "name": "第二章：实验室危机", "mapId": "ch2_map1", "creditMilestone": 45, "unlockCondition": "chapter_1_cleared", "bossId": "boss_lab_beast", "description": "实验室里的危险实验" },
-  { "chapterId": 3, "name": "第三章：校史馆秘密", "mapId": "ch3_map1", "creditMilestone": 80, "unlockCondition": "chapter_2_cleared", "bossId": "boss_history_guard", "description": "揭开同济百年校史" },
-  { "chapterId": 4, "name": "终章：毕业答辩", "mapId": "ch4_map1", "creditMilestone": 120, "unlockCondition": "chapter_3_cleared", "bossId": "boss_final", "description": "最终的毕业考验" }
+  { "chapterId": 0, "name": "序章：初入同济", "mapId": "ch0_map1", "creditMilestone": 0, "unlockCondition": null, "bossId": null, "description": "新生报道、图书馆异动、核心功能解锁。学术喵在猫形态下巡查书架，在必要时切换人形态完成第一次演示战斗，确认校园里出现了连续异常事件。" },
+  { "chapterId": 1, "name": "第一章：AI与协议革命", "mapId": "ch1_map1", "creditMilestone": 20, "unlockCondition": null, "bossId": "boss_ai_prof", "description": "选修「AI 与协议革命」，在室内课程楼层对抗拖延弹窗、含糊需求怪、复制粘贴影、幻觉答案体、过拟合史莱姆、需求膨胀兽等 AI 智能体怪物，击败 AI 陆教授通过考核。" },
+  { "chapterId": 2, "name": "第二章：樱花济与食堂危机", "mapId": "ch2_map1", "creditMilestone": 45, "unlockCondition": "chapter_1_cleared", "bossId": "boss_lab_beast", "description": "樱花季校园生活与食堂秩序修复。樱花济手账被花瓣打乱，食堂供应记录被饥饿幽灵搅乱，小鱼干补给与便当订单陆续失踪，学术喵需要修复手账、追回美食。" },
+  { "chapterId": 3, "name": "第三章：智械危机", "mapId": "ch3_map1", "creditMilestone": 80, "unlockCondition": "chapter_2_cleared", "bossId": "boss_history_guard", "description": "嘉定校区智械危机。图书馆迷雾与食堂危机背后的异常信号汇聚成混沌核心，校园智能设备过度追求效率，学术喵需要校准目标函数，在核心机房完成决战。" },
+  { "chapterId": 4, "name": "终章：120周年校庆", "mapId": "ch4_map1", "creditMilestone": 120, "unlockCondition": "chapter_3_cleared", "bossId": "boss_final", "description": "120 周年校庆。集齐跨时代校史记忆：1907 起点、1923 定名、1927 国立、1940 李庄办学、1979 恢复对德交流、2000 合并新同济、2017/2022 双一流，点亮同舟共济终章。" }
 ]

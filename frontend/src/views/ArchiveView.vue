@@ -14,13 +14,30 @@
             <p class="text-gray-600">收集进度</p>
             <p class="text-2xl font-bold text-[#4ECDC4]">{{ collectedCount }} / {{ totalCount }}</p>
           </div>
-          <div class="text-right">
-            <p class="text-gray-600">收集率</p>
-            <p class="text-2xl font-bold text-[#FFB7C5]">{{ Math.floor(collectionRate) }}%</p>
+          <!-- 步骤 9：环形进度环 -->
+          <div class="relative w-24 h-24">
+            <svg width="96" height="96" viewBox="0 0 96 96" class="transform -rotate-90">
+              <circle
+                cx="48" cy="48" :r="ringRadius"
+                fill="none"
+                stroke="#E5E7EB"
+                stroke-width="8"
+              />
+              <circle
+                cx="48" cy="48" :r="ringRadius"
+                fill="none"
+                stroke="#4ECDC4"
+                stroke-width="8"
+                stroke-linecap="round"
+                :stroke-dasharray="ringCircumference"
+                :stroke-dashoffset="ringDashOffset"
+                class="transition-all duration-500"
+              />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="text-lg font-bold text-[#FFB7C5]">{{ Math.floor(collectionRate) }}%</span>
+            </div>
           </div>
-        </div>
-        <div class="mt-3">
-          <ProgressBar :percentage="collectionRate" color="green" />
         </div>
       </div>
 
@@ -46,15 +63,15 @@
               <span
                 v-if="ending.cleared"
                 :class="[
-                  'px-3 py-1 rounded-full text-xs font-semibold',
+                  'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold',
                   ending.level === 2
-                    ? 'bg-yellow-100 text-yellow-700'
+                    ? 'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-400'
                     : ending.level === 1
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-400'
                     : 'bg-gray-100 text-gray-700'
                 ]"
               >
-                {{ ending.level === 2 ? '记忆完整' : ending.level === 1 ? '记忆未完整' : '标准' }}
+                {{ endingIcon(ending.level) }} {{ ending.level === 2 ? '记忆完整' : ending.level === 1 ? '记忆未完整' : '标准' }}
               </span>
               <span v-else class="px-3 py-1 rounded-full text-xs bg-gray-200 text-gray-500">未通关</span>
             </div>
@@ -105,16 +122,33 @@
 
       <div class="bg-white rounded-lg shadow-lg p-6">
         <h2 class="text-xl font-bold text-[#1A3C6E] mb-4">图鉴列表</h2>
+        <!-- 阶段 3.6：章节筛选 tab -->
+        <div class="flex gap-2 mb-4 flex-wrap">
+          <button
+            v-for="filter in chapterFilters"
+            :key="filter.value"
+            @click="selectedChapter = filter.value"
+            :class="[
+              'px-3 py-1.5 rounded-full text-xs font-semibold transition',
+              selectedChapter === filter.value
+                ? 'bg-[#1A3C6E] text-white shadow-md'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            ]"
+          >
+            {{ filter.label }}
+          </button>
+        </div>
         <div class="space-y-3">
           <div
-            v-for="archive in archivesConfig"
+            v-for="archive in filteredArchives"
             :key="archive.archiveId"
             :class="[
-              'bg-white rounded-lg shadow p-4 border-l-4 transition-all',
+              'bg-white rounded-lg shadow p-4 border-l-4 transition-all archive-item',
               isUnlocked(archive.archiveId)
-                ? 'border-[#4ECDC4]'
+                ? 'border-[#4ECDC4] cursor-pointer hover:shadow-lg hover:translate-x-1'
                 : 'border-gray-200 opacity-60'
             ]"
+            @click="openDetail(archive)"
           >
             <div class="flex justify-between items-start">
               <div class="flex-1">
@@ -135,14 +169,49 @@
         </div>
       </div>
     </div>
+
+    <!-- 阶段 3.6：图鉴详情 Modal -->
+    <transition name="modal-fade">
+      <div
+        v-if="detailArchive"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+        @click.self="closeDetail"
+      >
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 modal-content">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <span class="inline-block px-2 py-0.5 rounded-full bg-[#FFE5EC] text-[#1A3C6E] text-xs font-semibold mb-2">
+                第 {{ detailArchive.chapter }} 章
+              </span>
+              <h2 class="text-2xl font-bold text-[#1A3C6E]">{{ detailArchive.title }}</h2>
+            </div>
+            <span class="text-2xl text-[#4ECDC4]">✓</span>
+          </div>
+
+          <p class="text-sm text-gray-700 mb-4 leading-relaxed">{{ detailArchive.description }}</p>
+
+          <div class="bg-gray-50 rounded-lg p-3 mb-4">
+            <p class="text-xs text-gray-500">解锁条件</p>
+            <p class="text-sm font-semibold text-[#1A3C6E] mt-1">{{ detailArchive.unlockCondition }}</p>
+          </div>
+
+          <button
+            @click="closeDetail"
+            class="w-full px-4 py-2 rounded-lg bg-[#1A3C6E] text-white hover:bg-[#15305a] font-semibold"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useGameStore } from '../stores/game'
-import ProgressBar from '../components/ui/ProgressBar.vue'
 import archivesConfig from '../game/config/archives.json'
+import chaptersConfig from '../game/config/chapters.json'
 
 const gameStore = useGameStore()
 
@@ -152,7 +221,54 @@ const collectionRate = computed(() =>
   totalCount > 0 ? (collectedCount.value / totalCount) * 100 : 0
 )
 
-const chapterTitles = ['入学启程', '李庄岁月', '改革开放', '同舟共济']
+// 阶段 3.6：章节筛选状态（0 = 全部，1-4 = 对应章节）
+const selectedChapter = ref<number>(0)
+
+// 阶段 3.6：详情 Modal 状态
+const detailArchive = ref<any | null>(null)
+
+// 阶段 3.6：筛选后的图鉴列表
+const filteredArchives = computed(() => {
+  if (selectedChapter.value === 0) return archivesConfig
+  return (archivesConfig as any[]).filter(a => a.chapter === selectedChapter.value)
+})
+
+// 阶段 3.6：章节筛选选项
+const chapterFilters = [
+  { value: 0, label: '全部' },
+  { value: 1, label: '第 1 章' },
+  { value: 2, label: '第 2 章' },
+  { value: 3, label: '第 3 章' },
+  { value: 4, label: '第 4 章' }
+]
+
+// 阶段 3.6：打开/关闭详情
+const openDetail = (archive: any) => {
+  if (!isUnlocked(archive.archiveId)) return
+  detailArchive.value = archive
+}
+const closeDetail = () => {
+  detailArchive.value = null
+}
+
+// 步骤 9：章节标题从 chapters.json 动态读取（对齐 GDD）
+const chapterTitles = computed(() =>
+  (chaptersConfig as any[]).filter(c => c.chapterId >= 1).map(c => c.name)
+)
+
+// 步骤 9：环形进度参数
+const ringRadius = 40
+const ringCircumference = 2 * Math.PI * ringRadius
+const ringDashOffset = computed(() =>
+  ringCircumference - (collectionRate.value / 100) * ringCircumference
+)
+
+// 步骤 9：结局等级图标
+const endingIcon = (level: number): string => {
+  if (level === 2) return '🏆'
+  if (level === 1) return '📖'
+  return '✓'
+}
 
 const isUnlocked = (archiveId?: string) => {
   if (!archiveId) return false
@@ -215,3 +331,31 @@ const gameCompleted = computed(() => {
   return cleared[3] === true
 })
 </script>
+
+<style scoped>
+/* 阶段 3.6：图鉴条目入场动画 */
+@keyframes archiveUnlock {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.archive-item {
+  animation: archiveUnlock 0.3s ease-out backwards;
+}
+
+/* 阶段 3.6：Modal 淡入 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-content {
+  transition: transform 0.25s ease;
+}
+.modal-fade-enter-from .modal-content,
+.modal-fade-leave-to .modal-content {
+  transform: scale(0.95);
+}
+</style>

@@ -1,23 +1,23 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
 
-# SQLite 需要 check_same_thread=False 以支持多线程访问
-connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
-    connect_args["check_same_thread"] = False
-
-engine = create_engine(
+# 异步引擎（MySQL 8.x + aiomysql）
+engine = create_async_engine(
     settings.DATABASE_URL,
-    connect_args=connect_args,
     echo=False,
+    pool_pre_ping=True,
+    pool_recycle=settings.DB_POOL_RECYCLE,
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
 )
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
+AsyncSessionLocal = async_sessionmaker(
     bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
 )
 
 
@@ -25,9 +25,10 @@ class Base(DeclarativeBase):
     pass
 
 
-def get_db():
-    db = SessionLocal()
+async def get_db():
+    """异步数据库会话依赖"""
+    db = AsyncSessionLocal()
     try:
         yield db
     finally:
-        db.close()
+        await db.close()

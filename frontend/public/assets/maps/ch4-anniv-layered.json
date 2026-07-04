@@ -1,0 +1,229 @@
+{
+  "name": "anniv-layered-v1",
+  "pixelWidth": 10000,
+  "pixelHeight": 6000,
+  "chunks": [
+    {
+      "key": "ch4-anniv-layered-map-r0-c0",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r0-c0.png",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "key": "ch4-anniv-layered-map-r0-c1",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r0-c1.png",
+      "x": 2500,
+      "y": 0
+    },
+    {
+      "key": "ch4-anniv-layered-map-r0-c2",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r0-c2.png",
+      "x": 5000,
+      "y": 0
+    },
+    {
+      "key": "ch4-anniv-layered-map-r0-c3",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r0-c3.png",
+      "x": 7500,
+      "y": 0
+    },
+    {
+      "key": "ch4-anniv-layered-map-r1-c0",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r1-c0.png",
+      "x": 0,
+      "y": 2000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r1-c1",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r1-c1.png",
+      "x": 2500,
+      "y": 2000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r1-c2",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r1-c2.png",
+      "x": 5000,
+      "y": 2000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r1-c3",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r1-c3.png",
+      "x": 7500,
+      "y": 2000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r2-c0",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r2-c0.png",
+      "x": 0,
+      "y": 4000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r2-c1",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r2-c1.png",
+      "x": 2500,
+      "y": 4000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r2-c2",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r2-c2.png",
+      "x": 5000,
+      "y": 4000
+    },
+    {
+      "key": "ch4-anniv-layered-map-r2-c3",
+      "path": "assets/maps/ch4-anniv-layered-chunks/chunk-r2-c3.png",
+      "x": 7500,
+      "y": 4000
+    }
+  ],
+  "spawn": {
+    "x": 5000,
+    "y": 3300
+  },
+  "camera": {
+    "width": 960,
+    "height": 540
+  },
+  "obstacles": [
+    {
+      "type": "building",
+      "x": 0,
+      "y": 0,
+      "w": 10000,
+      "h": 1180
+    },
+    {
+      "type": "edge",
+      "x": 0,
+      "y": 0,
+      "w": 760,
+      "h": 6000
+    },
+    {
+      "type": "edge",
+      "x": 9240,
+      "y": 0,
+      "w": 760,
+      "h": 6000
+    },
+    {
+      "type": "edge",
+      "x": 0,
+      "y": 5050,
+      "w": 10000,
+      "h": 950
+    },
+    {
+      "type": "green",
+      "x": 760,
+      "y": 1180,
+      "w": 470,
+      "h": 3600
+    },
+    {
+      "type": "green",
+      "x": 8770,
+      "y": 1180,
+      "w": 470,
+      "h": 3600
+    },
+    {
+      "type": "water",
+      "x": 2840,
+      "y": 2470,
+      "w": 320,
+      "h": 1120
+    },
+    {
+      "type": "water",
+      "x": 6840,
+      "y": 2470,
+      "w": 320,
+      "h": 1120
+    },
+    {
+      "type": "pillar",
+      "x": 1500,
+      "y": 1800,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 2200,
+      "y": 2200,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 3500,
+      "y": 1900,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 5500,
+      "y": 2100,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 7200,
+      "y": 1900,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 8500,
+      "y": 2300,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 2000,
+      "y": 3500,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 4000,
+      "y": 3800,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 6000,
+      "y": 3500,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "pillar",
+      "x": 8000,
+      "y": 3800,
+      "w": 60,
+      "h": 180
+    },
+    {
+      "type": "flag",
+      "x": 3000,
+      "y": 2200,
+      "w": 60,
+      "h": 130
+    },
+    {
+      "type": "flag",
+      "x": 6800,
+      "y": 2200,
+      "w": 60,
+      "h": 130
+    }
+  ]
+}

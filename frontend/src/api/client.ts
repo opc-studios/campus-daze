@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useUserStore } from '../stores/user'
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -33,7 +33,7 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${userStore.token}`
         return apiClient(originalRequest)
       } catch (refreshError) {
-        userStore.logout()
+        await userStore.logout()
         window.location.href = '/login'
       }
     }

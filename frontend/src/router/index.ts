@@ -53,18 +53,24 @@ const router = createRouter({
       name: 'map',
       component: () => import('../views/MapView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/ending',
+      name: 'ending',
+      component: () => import('../views/EndingView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })
 
 router.beforeEach((to, _from, next) => {
   const userStore = useUserStore()
-  
+
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     next('/login')
-  } else if (to.name === 'login' && userStore.isLoggedIn) {
-    next('/home')
   } else {
+    // 允许已登录用户访问 /login（用户主动访问登录页 = 想重新登录）
+    // LoginView.vue onMounted 会清理残留 token
     next()
   }
 })

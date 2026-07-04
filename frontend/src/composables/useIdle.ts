@@ -22,12 +22,19 @@ export function useIdle() {
     timer = setInterval(() => {
       elapsedTime.value++
 
+      // GDD §6.6 通关统计：每秒累加学习时长
+      gameStore.recordStudyTime(1)
+
       if (elapsedTime.value % 5 === 0) {
+        // GDD §4.1 道具效果应用：应用挂机装备/临时 buff 乘数
+        const { expRate, coinRate } = gameStore.getIdleMultiplier(task)
         if (task === 'study') {
-          gameStore.addExp(10)
+          // 学习：EXP +10 × expRate
+          gameStore.addExp(Math.floor(10 * expRate))
         } else {
-          gameStore.addExp(6)
-          gameStore.addCoins(8)
+          // 实习：EXP +6 × expRate，校园币 +8 × coinRate
+          gameStore.addExp(Math.floor(6 * expRate))
+          gameStore.addCoins(Math.floor(8 * coinRate))
         }
       }
 

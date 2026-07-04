@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-[#FAFAF5] via-[#FFE5EC] to-[#FFB7C5] floating-particles relative overflow-hidden">
+  <div :class="['min-h-screen bg-gradient-to-br floating-particles relative overflow-hidden chapter-transition', chapterTheme]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative z-10">
       <div class="mb-4 flex justify-between items-center">
         <div>
           <h1 class="text-2xl sm:text-3xl font-bold text-[#1A3C6E]">学术喵 · 校园</h1>
-          <p class="text-sm text-gray-600 mt-1">第 {{ gameStore.currentChapter + 1 }} 章 · {{ chapterTitle }}</p>
+          <p class="text-sm text-gray-600 mt-1 chapter-title-fade" :key="gameStore.currentChapter">第 {{ gameStore.currentChapter + 1 }} 章 · {{ chapterTitle }}</p>
         </div>
         <button @click="handleLogout" class="game-button">登出</button>
       </div>
@@ -15,12 +15,29 @@
         :exp-to-next="100"
         :credits="gameStore.resources?.credits || 0"
         :coins="gameStore.resources?.coins || 0"
-        class="mb-6"
+        class="mb-3"
       />
+
+      <!-- 步骤 7：章节学分进度条 -->
+      <div class="mb-6 bg-white/80 backdrop-blur rounded-lg p-3 shadow-sm">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-semibold text-[#1A3C6E]">章节进度</span>
+          <span class="text-xs" :class="creditProgress >= 100 ? 'text-yellow-600 font-bold boss-ready-pulse' : 'text-gray-600'">
+            {{ chapterCredits }} / {{ creditMilestone }} 学分{{ creditProgress >= 100 ? ' · 可挑战 Boss！' : '' }}
+          </span>
+        </div>
+        <ProgressBar :percentage="creditProgress" color="pink" />
+      </div>
 
       <div class="relative w-full max-w-5xl mx-auto" style="aspect-ratio: 16 / 9;">
         <div class="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-          <svg viewBox="0 0 1280 720" class="w-full h-full block" preserveAspectRatio="xMidYMid slice">
+          <img
+            src="/assets/poster/gdd-cover.png"
+            alt="同舟喵济"
+            class="absolute inset-0 w-full h-full object-cover"
+            @error="handleImageError"
+          >
+          <svg viewBox="0 0 1280 720" class="w-full h-full block relative z-10" preserveAspectRatio="xMidYMid slice">
             <defs>
               <linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="#A8D8EA" />
@@ -47,7 +64,7 @@
             <rect x="220" y="400" width="200" height="100" rx="4" fill="#A88254" />
             <rect x="270" y="430" width="100" height="60" rx="4" fill="#5D4A30" />
 
-            <g v-for="hot in hotspots" :key="hot.id">
+            <g v-for="(hot, idx) in hotspots" :key="hot.id" :class="['hotspot-enter', `hotspot-delay-${idx}`]">
               <circle
                 :cx="hot.x"
                 :cy="hot.y"
@@ -57,8 +74,8 @@
                 stroke="#FFFFFF"
                 stroke-width="4"
                 class="cursor-pointer transition-all"
-                :class="{ 'opacity-100': hoveredId === hot.id }"
-                @click="navigateTo(hot)"
+                :class="{ 'opacity-100': hoveredId === hot.id, 'cat-bounce': hot.id === 'cat' && catBouncing }"
+                @click="hot.id === 'cat' ? handleCatClick(hot) : navigateTo(hot)"
                 @mouseenter="hoveredId = hot.id"
                 @mouseleave="hoveredId = null"
               />
@@ -107,7 +124,7 @@
               </g>
             </g>
 
-            <g>
+            <g @click="handleCatClick({ id: 'cat', action: () => router.push('/growth') } as Hotspot)" class="cursor-pointer" :class="{ 'cat-bounce': catBouncing }">
               <ellipse cx="640" cy="660" rx="80" ry="14" fill="#000000" opacity="0.2" />
               <circle cx="640" cy="560" r="60" fill="#FFD1DC" stroke="#FFFFFF" stroke-width="3" />
               <polygon points="610,540 615,505 630,535" fill="#FFD1DC" stroke="#FFFFFF" stroke-width="2" />
@@ -176,7 +193,9 @@ import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useUserStore } from '../stores/user'
 import ResourceBar from '../components/ui/ResourceBar.vue'
+import ProgressBar from '../components/ui/ProgressBar.vue'
 import IdlePanel from '../components/IdlePanel.vue'
+import chaptersConfig from '../game/config/chapters.json'
 
 const router = useRouter()
 const gameStore = useGameStore()
@@ -184,6 +203,8 @@ const userStore = useUserStore()
 
 const hoveredId = ref<string | null>(null)
 const showEventPanel = ref(false)
+// 学术猫点击弹跳反馈
+const catBouncing = ref(false)
 
 interface Hotspot {
   id: string
@@ -202,8 +223,35 @@ interface Hotspot {
 
 const chapterTitle = computed(() => {
   const ch = gameStore.currentChapter || 0
-  const titles = ['入学启程', '李庄岁月', '改革开放', '同舟共济']
+  const titles = ['初入同济', 'AI与协议革命', '樱花济与食堂危机', '智械危机', '120周年校庆']
   return titles[ch] || '入学启程'
+})
+
+// 步骤 7：章节色调映射
+const chapterTheme = computed(() => {
+  const ch = gameStore.currentChapter || 0
+  const themes: Record<number, string> = {
+    0: 'from-[#FAFAF5] via-[#FFE5EC] to-[#FFB7C5]',
+    1: 'from-[#E8F4FD] via-[#B0E0E6] to-[#4ECDC4]',
+    2: 'from-[#FFF0F5] via-[#FFB7C5] to-[#FF6B9D]',
+    3: 'from-[#F5F5DC] via-[#D4A574] to-[#8B4513]',
+    4: 'from-[#FFD700] via-[#FFA500] to-[#FF6347]'
+  }
+  return themes[ch] || themes[0]
+})
+
+// 步骤 7：学分进度条
+const creditMilestone = computed(() => {
+  const ch = gameStore.currentChapter || 0
+  const chapter = (chaptersConfig as any[]).find(c => c.chapterId === ch)
+  return chapter?.creditMilestone || 100
+})
+
+const chapterCredits = computed(() => gameStore.progress?.chapterCredits || 0)
+const creditProgress = computed(() => {
+  const milestone = creditMilestone.value
+  if (milestone <= 0) return 0
+  return Math.min(100, (chapterCredits.value / milestone) * 100)
 })
 
 const hotspots = computed<Hotspot[]>(() => {
@@ -343,8 +391,29 @@ const navigateTo = (hot: Hotspot) => {
   }
 }
 
+const handleCatClick = (hot: Hotspot) => {
+  // 触发弹跳动画
+  catBouncing.value = true
+  setTimeout(() => {
+    catBouncing.value = false
+  }, 200)
+  // 200ms 后执行原动作（避免动画与跳转重叠）
+  setTimeout(() => {
+    if (hot.action) {
+      hot.action()
+    } else if (hot.route) {
+      router.push(hot.route)
+    }
+  }, 200)
+}
+
 const handleLogout = () => {
   userStore.logout()
   router.push('/login')
+}
+
+const handleImageError = (e: Event) => {
+  const target = e.target as HTMLImageElement
+  if (target) target.style.display = 'none'
 }
 </script>

@@ -8,6 +8,9 @@ import eventsConfig from '../config/events.json'
 import itemsConfig from '../config/items.json'
 import archivesConfig from '../config/archives.json'
 import puzzlesConfig from '../config/puzzles.json'
+import actionsConfig from '../config/actions.json'
+import equipmentConfig from '../config/equipment.json'
+import obstaclesConfig from '../config/obstacles.json'
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -50,6 +53,16 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy()
       percentText.destroy()
     })
+
+    // 加载分层地图 JSON 配置（key: zhongheMap，供 PreloaderScene/MapExploreScene 读取）
+    // ch1 中和广场（保留原 key 兼容）
+    this.load.json('zh1Map', '/assets/maps/zhonghe-plaza-layered-playtest.json')
+    // ch2 樱花季 / ch3 智械危机 / ch4 校庆（独立地图素材）
+    this.load.json('ch2Map', '/assets/maps/ch2-sakura-layered.json')
+    this.load.json('ch3Map', '/assets/maps/ch3-cyber-layered.json')
+    this.load.json('ch4Map', '/assets/maps/ch4-anniv-layered.json')
+    // 兼容旧 key：zhongheMap 指向 ch1
+    this.load.json('zhongheMap', '/assets/maps/zhonghe-plaza-layered-playtest.json')
   }
 
   create() {
@@ -62,7 +75,11 @@ export class BootScene extends Phaser.Scene {
     this.cache.json.add('items', itemsConfig)
     this.cache.json.add('archives', archivesConfig)
     this.cache.json.add('puzzles', puzzlesConfig)
+    this.cache.json.add('actions', actionsConfig)
+    this.cache.json.add('equipment', equipmentConfig)
+    this.cache.json.add('obstacles', obstaclesConfig)
+    // zhongheMap 已通过 this.load.json 在 preload 中加载到 cache
 
-    this.scene.start('MapExploreScene')
+    this.scene.start('PreloaderScene')
   }
 }
