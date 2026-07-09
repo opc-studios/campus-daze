@@ -2,6 +2,7 @@
   <div id="app">
     <router-view />
     <RewardNotification />
+    <GameNotification />
   </div>
 </template>
 
@@ -10,6 +11,7 @@ import { watch, onMounted, onUnmounted } from 'vue'
 import { useWebSocket } from './composables/useWebSocket'
 import { useUserStore } from './stores/user'
 import RewardNotification from './components/RewardNotification.vue'
+import GameNotification from './components/GameNotification.vue'
 
 const userStore = useUserStore()
 const { isConnected, messages, connect, disconnect } = useWebSocket()

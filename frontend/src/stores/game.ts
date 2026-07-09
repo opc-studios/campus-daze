@@ -5,8 +5,30 @@ import type { GameState, RoleId, CombatRole, FinalEndingType, NewGamePlusState }
 import rolesConfig from '../game/config/roles.json'
 import skillsConfig from '../game/config/skills.json'
 import itemsConfig from '../game/config/items.json'
-import { calculateFinalEnding, determineEndingType, calculateArchiveRate } from '../game/ending/ending-calculator'
+import { calculateFinalEnding, determineEndingType } from '../game/ending/ending-calculator'
 import type { FinalEnding } from '../game/ending/ending-calculator'
+
+export interface Task {
+  id: string
+  name: string
+  description: string
+  type: 'main' | 'side' | 'daily'
+  progress: number
+  target: number
+  rewards: { exp?: number; coins?: number; credits?: number; items?: string[] }
+  completed: boolean
+  claimed: boolean
+}
+
+export interface CollectionItem {
+  id: string
+  name: string
+  description: string
+  category: string
+  rarity: string
+  obtained: boolean
+  obtainedAt?: number
+}
 
 function createDefaultGameState(roleId: RoleId): GameState {
   const role = rolesConfig.find(r => r.roleId === roleId)
@@ -28,7 +50,10 @@ function createDefaultGameState(roleId: RoleId): GameState {
         accuracyRate: role.combatStats?.accuracyRate ?? 1.0
       },
       unlockedSkills: [`${roleId}_basic`],
-      equippedSkills: [`${roleId}_basic`, null, null]
+      equippedSkills: [`${roleId}_basic`, null, null],
+      currentHp: 100 + role.baseAttrs.resilience * 12,
+      buffs: [],
+      debuffs: []
     },
     resources: { credits: 0, coins: 0 },
     idle: { task: 'study', startedAt: 0, lastClaimedAt: 0 },
@@ -40,13 +65,12 @@ function createDefaultGameState(roleId: RoleId): GameState {
       seenEvents: [],
       archives: [],
       chapterEndings: [0, 0, 0, 0],
-      // GDD §6.6 通关统计字段
       studyTimeSeconds: 0,
       exploreCount: 0,
       eventTriggerCount: 0,
-      // GDD §6.5 三因子之一：每章关键事件选择索引
       chapterChoices: [0, 0, 0, 0],
-      gameCompleted: false
+      gameCompleted: false,
+      ngPlusCount: 0
     },
     map: {
       currentMapId: 'ch1_map1',
@@ -54,22 +78,53 @@ function createDefaultGameState(roleId: RoleId): GameState {
       formSwitchAllowed: true,
       revealedRegions: ['entrance'],
       completedNodes: [],
-      nodeCooldowns: {}
+      nodeCooldowns: {},
+      currentZone: 'zhonghe'
     },
     monsters: {},
     combat: {
       state: 'idle',
       speed: 1,
       canSkip: true,
-      skipped: false
+      skipped: false,
+      comboCount: 0,
+      shield: 0
     },
     inventory: {},
-    equipped: {}
+    equipped: {},
+    tasks: [],
+    collections: [],
+    notifications: [],
+    activeBuffs: [],
+    nextCombatShield: 0
   }
 }
 
 function hasSkillConfig(skillId: string): boolean {
   return skillsConfig.some(s => s.skillId === skillId)
+}
+
+function createDefaultTasks(): Task[] {
+  return [
+    { id: 'task_study_1', name: '初次学习', description: '完成一次挂机学习', type: 'main', progress: 0, target: 1, rewards: { exp: 100 }, completed: false, claimed: false },
+    { id: 'task_battle_1', name: '初次战斗', description: '击败一只怪物', type: 'main', progress: 0, target: 1, rewards: { exp: 150 }, completed: false, claimed: false },
+    { id: 'task_exp_1', name: '提升等级', description: '提升到 3 级', type: 'main', progress: 1, target: 3, rewards: { coins: 100 }, completed: false, claimed: false },
+    { id: 'task_credit_1', name: '获得学分', description: '累计获得 10 学分', type: 'side', progress: 0, target: 10, rewards: { exp: 200 }, completed: false, claimed: false },
+    { id: 'task_explore_1', name: '探索地图', description: '完成 5 个地图节点', type: 'side', progress: 0, target: 5, rewards: { items: ['potion_exp'] }, completed: false, claimed: false }
+  ]
+}
+
+function createDefaultCollections(): CollectionItem[] {
+  return itemsConfig
+    .filter((item: any) => item.category === 'souvenir')
+    .map((item: any) => ({
+      id: item.itemId,
+      name: item.name,
+      description: item.description,
+      category: item.subType || 'archive',
+      rarity: item.rarity || 'common',
+      obtained: false
+    }))
 }
 
 export const useGameStore = defineStore('game', () => {
@@ -85,10 +140,21 @@ export const useGameStore = defineStore('game', () => {
   const inventory = computed(() => state.value?.inventory ?? {})
   const equipped = computed(() => state.value?.equipped ?? {})
   const currentChapter = computed(() => state.value?.progress.currentChapter ?? 0)
+  const tasks = computed(() => (state.value as any)?.tasks ?? [])
+  const collections = computed(() => (state.value as any)?.collections ?? [])
+  const notifications = computed(() => (state.value as any)?.notifications ?? [])
 
   const unlockedSkills = computed(() => {
     if (!state.value) return []
     return getUnlockedSkillIds(state.value)
+  })
+
+  const unclaimedRewards = computed(() => {
+    return tasks.value.filter((t: any) => t.completed && !t.claimed)
+  })
+
+  const completedCollections = computed(() => {
+    return collections.value.filter((c: any) => c.obtained)
   })
 
   function getUnlockedSkillIds(gs: GameState): string[] {
@@ -109,6 +175,8 @@ export const useGameStore = defineStore('game', () => {
       state.value = data.state
       stateVersion.value = data.state_version
       loaded.value = true
+      initializeTasksIfMissing()
+      initializeCollectionsIfMissing()
     } catch {
       loaded.value = false
     }
@@ -129,10 +197,27 @@ export const useGameStore = defineStore('game', () => {
 
   async function initSave(roleId: RoleId) {
     const newState = createDefaultGameState(roleId)
+    ;(newState as any).tasks = createDefaultTasks()
+    ;(newState as any).collections = createDefaultCollections()
+    ;(newState as any).notifications = []
     state.value = newState
     stateVersion.value = 0
     await saveSave()
     loaded.value = true
+  }
+
+  function initializeTasksIfMissing() {
+    if (!state.value) return
+    if (!((state.value as any).tasks) || ((state.value as any).tasks).length === 0) {
+      ;(state.value as any).tasks = createDefaultTasks()
+    }
+  }
+
+  function initializeCollectionsIfMissing() {
+    if (!state.value) return
+    if (!((state.value as any).collections) || ((state.value as any).collections).length === 0) {
+      ;(state.value as any).collections = createDefaultCollections()
+    }
   }
 
   function switchForm() {
@@ -155,6 +240,8 @@ export const useGameStore = defineStore('game', () => {
       state.value.player.exp -= expToNext
       state.value.player.level++
       expToNext = state.value.player.level * 100
+      updateTaskProgress('task_exp_1', 1)
+      addNotification('level_up', `恭喜升级！当前等级：${state.value.player.level}`)
     }
   }
 
@@ -162,6 +249,7 @@ export const useGameStore = defineStore('game', () => {
     if (!state.value) return
     state.value.resources.credits += amount
     state.value.progress.chapterCredits += amount
+    updateTaskProgress('task_credit_1', amount)
   }
 
   function addCoins(amount: number) {
@@ -175,13 +263,23 @@ export const useGameStore = defineStore('game', () => {
       state.value.inventory[itemId] = 0
     }
     state.value.inventory[itemId] += count
+    unlockCollection(itemId)
+  }
+
+  function unlockCollection(itemId: string) {
+    if (!state.value) return
+    const collection = ((state.value as any).collections || []).find((c: CollectionItem) => c.id === itemId)
+    if (collection && !collection.obtained) {
+      collection.obtained = true
+      collection.obtainedAt = Date.now()
+      addNotification('collection', `获得收集品：${collection.name}`)
+    }
   }
 
   function useItem(itemId: string) {
     if (!state.value) return false
     if (!state.value.inventory[itemId] || state.value.inventory[itemId] <= 0) return false
 
-    // GDD §4.1 查找道具配置并应用消耗效果
     const item = itemsConfig.find((i: any) => i.itemId === itemId)
     const effect = item?.effect
     if (effect) {
@@ -196,24 +294,21 @@ export const useGameStore = defineStore('game', () => {
           addCoins(effect.amount || 0)
           break
         case 'heal':
-          // 战斗外回血：写入 player 当前 HP（若存在 currentHp 字段）
           if ((state.value as any).player?.currentHp !== undefined) {
+            const maxHp = 100 + state.value.player.level * 18 + state.value.player.attrs.resilience * 12
             ;(state.value as any).player.currentHp = Math.min(
               (state.value as any).player.currentHp + (effect.amount || 0),
-              100 + state.value.player.level * 18 + state.value.player.attrs.resilience * 12
+              maxHp
             )
           }
           break
         case 'buff':
-          // 临时 buff：写入 activeBuffs，过期自动清理
           applyBuff(effect.stat || 'exp_rate', effect.value || 1, effect.duration || 300)
           break
         case 'shield':
-          // 护盾：写入 nextCombatShield，战斗开始时应用
           ;(state.value as any).nextCombatShield = ((state.value as any).nextCombatShield || 0) + (effect.amount || 0)
           break
         default:
-          // 非 consumable 类型（souvenir/tool）不消耗
           if (item?.category !== 'consumable') return false
       }
     }
@@ -228,16 +323,11 @@ export const useGameStore = defineStore('game', () => {
     state.value.equipped[slot] = itemId
   }
 
-  /**
-   * GDD §4.1 道具效果应用：获取挂机槽位装备的乘数
-   * 支持 idle_boost 类型道具（study_headphone EXP+8%, intern_badge 校园币+8%）
-   */
   function getIdleMultiplier(task: 'study' | 'intern'): { expRate: number; coinRate: number } {
     let expRate = 1.0
     let coinRate = 1.0
     if (!state.value) return { expRate, coinRate }
 
-    // 1. 装备槽道具（study_headphone / intern_badge）
     const slot = task === 'study' ? 'study' : 'intern'
     const equippedItemId = state.value.equipped[slot]
     if (equippedItemId) {
@@ -248,7 +338,6 @@ export const useGameStore = defineStore('game', () => {
       }
     }
 
-    // 2. 临时 buff 道具（coffee_boost 等，从 activeBuffs 字段读取）
     const activeBuffs = (state.value as any).activeBuffs as Array<{
       stat: string
       value: number
@@ -262,16 +351,12 @@ export const useGameStore = defineStore('game', () => {
           if (buff.stat === 'coin_rate') coinRate *= buff.value
         }
       })
-      // 清理过期 buff
       ;(state.value as any).activeBuffs = activeBuffs.filter(b => b.expiresAt > now)
     }
 
     return { expRate, coinRate }
   }
 
-  /**
-   * GDD §4.1 应用消耗品 buff（coffee_boost EXP+20% 持续 5 分钟）
-   */
   function applyBuff(stat: string, value: number, durationSeconds: number) {
     if (!state.value) return
     if (!(state.value as any).activeBuffs) {
@@ -284,16 +369,13 @@ export const useGameStore = defineStore('game', () => {
     })
   }
 
-  /**
-   * GDD §4.1 获取探索罗盘揭示范围加成
-   */
   function getRevealBoost(): number {
     if (!state.value) return 1.0
     const equippedItemId = state.value.equipped.explore
     if (!equippedItemId) return 1.0
     const item = itemsConfig.find((i: any) => i.itemId === equippedItemId)
     if (item?.effect?.type === 'reveal_boost') {
-      return item.effect.value
+      return item.effect.value ?? 1.0
     }
     return 1.0
   }
@@ -305,8 +387,8 @@ export const useGameStore = defineStore('game', () => {
     }
     if (!state.value.progress.clearedNodes.includes(nodeId)) {
       state.value.progress.clearedNodes.push(nodeId)
-      // GDD §6.6 通关统计：探索次数
       state.value.progress.exploreCount = (state.value.progress.exploreCount || 0) + 1
+      updateTaskProgress('task_explore_1', 1)
     }
   }
 
@@ -328,18 +410,18 @@ export const useGameStore = defineStore('game', () => {
     if (!state.value) return
     if (!state.value.progress.seenEvents.includes(eventId)) {
       state.value.progress.seenEvents.push(eventId)
-      // GDD §6.6 通关统计：事件触发数
       state.value.progress.eventTriggerCount = (state.value.progress.eventTriggerCount || 0) + 1
     }
   }
 
-  // GDD §6.6 通关统计：累加学习时长
   function recordStudyTime(seconds: number) {
     if (!state.value) return
     state.value.progress.studyTimeSeconds = (state.value.progress.studyTimeSeconds || 0) + seconds
+    if (seconds > 0) {
+      updateTaskProgress('task_study_1', 1)
+    }
   }
 
-  // GDD §6.5 三因子之一：记录章节关键事件选择
   function recordChapterChoice(chapterIndex: number, choiceIndex: number) {
     if (!state.value) return
     if (!state.value.progress.chapterChoices) {
@@ -357,7 +439,6 @@ export const useGameStore = defineStore('game', () => {
     if (chapterIndex + 1 < 4) {
       state.value.progress.currentChapter = chapterIndex + 1
     }
-    // GDD §6.5 终章通关时标记 gameCompleted
     if (chapterIndex === 3) {
       state.value.progress.gameCompleted = true
     }
@@ -384,30 +465,23 @@ export const useGameStore = defineStore('game', () => {
     if (!state.value.progress.chapterEndings) {
       state.value.progress.chapterEndings = [0, 0, 0, 0]
     }
-    // GDD §6.5：综合 archivesInChapter 与 chapterChoices 判定 endingLevel
-    // endingLevel: 0=标准, 1=记忆未完整, 2=记忆完整
-    // chapterChoices[chapterIndex] > 0 视为关键选择有加分（+1 等级，上限 2）
     const choiceBonus = state.value.progress.chapterChoices?.[chapterIndex] ?? 0
     const finalLevel = Math.min(2, endingLevel + (choiceBonus > 0 ? 1 : 0))
     state.value.progress.chapterEndings[chapterIndex] = finalLevel
   }
 
-  // GDD §6.5 三因子最终结局 getter
   function getFinalEnding(): FinalEnding | null {
     if (!state.value) return null
     if (!state.value.progress.gameCompleted) return null
     return calculateFinalEnding(state.value)
   }
 
-  // GDD §6.5 单独暴露结局类型判定（用于 UI 预览）
   function getEndingType(): FinalEndingType | null {
     if (!state.value) return null
     if (!state.value.progress.gameCompleted) return null
     return determineEndingType(state.value)
   }
 
-  // D.3 二周目继承：从旧存档提取继承快照
-  // GDD §6.7：二周目保留 archives + unlockedSkills，部分资源（coins/credits）按 50% 继承
   function extractNewGamePlusSnapshot(): NewGamePlusState | null {
     if (!state.value) return null
     if (!state.value.progress.gameCompleted) return null
@@ -427,9 +501,6 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  // D.3 二周目继承：开启二周目
-  // 决策 #16：使用 saveSave() 而非 saveApi.save()，统一走 store 乐观锁路径
-  // 流程：1) 校验 gameCompleted 2) 提取继承快照 3) 创建新存档（同 roleId）4) 注入继承项 5) 保存
   async function startNewGamePlus(): Promise<boolean> {
     if (!state.value) return false
     if (!state.value.progress.gameCompleted) return false
@@ -438,30 +509,95 @@ export const useGameStore = defineStore('game', () => {
     const snapshot = extractNewGamePlusSnapshot()
     if (!snapshot) return false
 
-    // 创建同角色新存档（重置所有进度）
     const newState = createDefaultGameState(roleId)
+    ;(newState as any).tasks = createDefaultTasks()
+    ;(newState as any).collections = ((state.value as any).collections || []).map((c: CollectionItem) => ({
+      ...c,
+      claimed: false
+    }))
+    ;(newState as any).notifications = []
 
-    // 注入继承项
-    // 1. ngPlusCount 递增
     newState.progress.ngPlusCount = snapshot.ngPlusCount
-    // 2. 保留图鉴收集（GDD §6.7）
     newState.progress.archives = [...snapshot.inheritedArchives]
-    // 3. 保留已解锁技能（GDD §6.7：二周目保留技能解锁状态）
-    // 注意：createDefaultGameState 默认仅解锁 basic 技能；这里合并继承的技能
     const mergedSkills = Array.from(new Set([
       ...newState.player.unlockedSkills,
       ...snapshot.inheritedSkills
     ]))
     newState.player.unlockedSkills = mergedSkills
-    // 4. 部分资源继承（50%）
     newState.resources.coins = snapshot.bonusCoins
     newState.resources.credits = snapshot.bonusCredits
     newState.progress.chapterCredits = snapshot.bonusCredits
 
-    // 替换 state 并保存（stateVersion 保持当前值，走乐观锁更新）
     state.value = newState
     await saveSave()
     return true
+  }
+
+  function updateTaskProgress(taskId: string, amount: number) {
+    if (!state.value) return
+    const task = ((state.value as any).tasks || []).find((t: Task) => t.id === taskId)
+    if (task && !task.completed) {
+      task.progress += amount
+      if (task.progress >= task.target) {
+        task.completed = true
+        addNotification('task', `任务完成：${task.name}`)
+      }
+    }
+  }
+
+  function claimTaskReward(taskId: string): boolean {
+    if (!state.value) return false
+    const task = ((state.value as any).tasks || []).find((t: Task) => t.id === taskId)
+    if (!task || !task.completed || task.claimed) return false
+
+    if (task.rewards.exp) addExp(task.rewards.exp)
+    if (task.rewards.coins) addCoins(task.rewards.coins)
+    if (task.rewards.credits) addCredits(task.rewards.credits)
+    if (task.rewards.items) {
+      task.rewards.items.forEach((itemId: string) => addItem(itemId))
+    }
+
+    task.claimed = true
+    return true
+  }
+
+  function addNotification(type: string, message: string, data?: any) {
+    if (!state.value) return
+    if (!((state.value as any).notifications)) {
+      ;(state.value as any).notifications = []
+    }
+    ;(state.value as any).notifications.unshift({
+      id: Date.now().toString(),
+      type,
+      message,
+      data,
+      timestamp: Date.now()
+    })
+    if (((state.value as any).notifications).length > 20) {
+      ;(state.value as any).notifications.pop()
+    }
+  }
+
+  function dismissNotification(notificationId: string) {
+    if (!state.value) return
+    ;(state.value as any).notifications = ((state.value as any).notifications || []).filter(
+      (n: any) => n.id !== notificationId
+    )
+  }
+
+  function setCurrentZone(zoneId: string) {
+    if (!state.value) return
+    state.value.map.currentZone = zoneId
+  }
+
+  function incrementComboCount() {
+    if (!state.value) return
+    ;(state.value as any).combat.comboCount = ((state.value as any).combat.comboCount || 0) + 1
+  }
+
+  function resetComboCount() {
+    if (!state.value) return
+    ;(state.value as any).combat.comboCount = 0
   }
 
   return {
@@ -476,7 +612,12 @@ export const useGameStore = defineStore('game', () => {
     inventory,
     equipped,
     currentChapter,
+    tasks,
+    collections,
+    notifications,
     unlockedSkills,
+    unclaimedRewards,
+    completedCollections,
     loadSave,
     saveSave,
     initSave,
@@ -506,6 +647,13 @@ export const useGameStore = defineStore('game', () => {
     startNewGamePlus,
     getIdleMultiplier,
     applyBuff,
-    getRevealBoost
+    getRevealBoost,
+    updateTaskProgress,
+    claimTaskReward,
+    addNotification,
+    dismissNotification,
+    setCurrentZone,
+    incrementComboCount,
+    resetComboCount
   }
 })

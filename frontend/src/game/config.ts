@@ -3,6 +3,7 @@ import { BootScene } from './scenes/BootScene'
 import { PreloaderScene } from './scenes/PreloaderScene'
 import { MapExploreScene } from './scenes/MapExploreScene'
 import { CombatOverlayScene } from './scenes/CombatOverlayScene'
+import { WorldMapScene } from './scenes/WorldMapScene'
 
 export const phaserConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -18,7 +19,7 @@ export const phaserConfig: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
-  scene: [BootScene, PreloaderScene, MapExploreScene, CombatOverlayScene],
+  scene: [BootScene, PreloaderScene, MapExploreScene, CombatOverlayScene, WorldMapScene],
   physics: {
     default: 'arcade',
     arcade: {

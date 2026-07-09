@@ -1,7 +1,101 @@
 [
-  { "chapterId": 0, "name": "序章：初入同济", "mapId": "ch0_map1", "creditMilestone": 0, "unlockCondition": null, "bossId": null, "description": "新生报道、图书馆异动、核心功能解锁。学术喵在猫形态下巡查书架，在必要时切换人形态完成第一次演示战斗，确认校园里出现了连续异常事件。" },
-  { "chapterId": 1, "name": "第一章：AI与协议革命", "mapId": "ch1_map1", "creditMilestone": 20, "unlockCondition": null, "bossId": "boss_ai_prof", "description": "选修「AI 与协议革命」，在室内课程楼层对抗拖延弹窗、含糊需求怪、复制粘贴影、幻觉答案体、过拟合史莱姆、需求膨胀兽等 AI 智能体怪物，击败 AI 陆教授通过考核。" },
-  { "chapterId": 2, "name": "第二章：樱花济与食堂危机", "mapId": "ch2_map1", "creditMilestone": 45, "unlockCondition": "chapter_1_cleared", "bossId": "boss_lab_beast", "description": "樱花季校园生活与食堂秩序修复。樱花济手账被花瓣打乱，食堂供应记录被饥饿幽灵搅乱，小鱼干补给与便当订单陆续失踪，学术喵需要修复手账、追回美食。" },
-  { "chapterId": 3, "name": "第三章：智械危机", "mapId": "ch3_map1", "creditMilestone": 80, "unlockCondition": "chapter_2_cleared", "bossId": "boss_history_guard", "description": "嘉定校区智械危机。图书馆迷雾与食堂危机背后的异常信号汇聚成混沌核心，校园智能设备过度追求效率，学术喵需要校准目标函数，在核心机房完成决战。" },
-  { "chapterId": 4, "name": "终章：120周年校庆", "mapId": "ch4_map1", "creditMilestone": 120, "unlockCondition": "chapter_3_cleared", "bossId": "boss_final", "description": "120 周年校庆。集齐跨时代校史记忆：1907 起点、1923 定名、1927 国立、1940 李庄办学、1979 恢复对德交流、2000 合并新同济、2017/2022 双一流，点亮同舟共济终章。" }
+  { 
+    "chapterId": 0, 
+    "name": "序章：初入同济", 
+    "mapId": "ch0_map1", 
+    "creditMilestone": 0, 
+    "unlockCondition": null, 
+    "bossId": null, 
+    "description": "新生报道、图书馆异动、核心功能解锁。学术喵在猫形态下巡查书架，在必要时切换人形态完成第一次演示战斗，确认校园里出现了连续异常事件。",
+    "zoneId": "entrance",
+    "schoolNodes": [],
+    "memoryPoints": []
+  },
+  { 
+    "chapterId": 1, 
+    "name": "第一章：AI与协议革命", 
+    "mapId": "ch1_map1", 
+    "creditMilestone": 20, 
+    "unlockCondition": null, 
+    "bossId": "boss_ai_prof", 
+    "description": "选修「AI 与协议革命」，在室内课程楼层对抗拖延弹窗、含糊需求怪、复制粘贴影、幻觉答案体、过拟合史莱姆、需求膨胀兽等 AI 智能体怪物，击败 AI 陆教授通过考核。",
+    "zoneId": "ai_building",
+    "schoolNodes": [
+      { "id": "ai_dept", "name": "人工智能学院", "position": { "x": 880, "y": 380 }, "type": "combat" },
+      { "id": "cs_dept", "name": "计算机科学与技术系", "position": { "x": 860, "y": 350 }, "type": "study" },
+      { "id": "library", "name": "同济大学图书馆", "position": { "x": 640, "y": 320 }, "type": "explore" },
+      { "id": "zhonghe", "name": "衷和广场", "position": { "x": 375, "y": 440 }, "type": "rest" }
+    ],
+    "memoryPoints": [
+      { "id": "mem_ai_start", "name": "AI课程起点", "archiveId": "archive_ai_begin", "description": "选修AI课程的第一天" }
+    ]
+  },
+  { 
+    "chapterId": 2, 
+    "name": "第二章：樱花济与食堂危机", 
+    "mapId": "ch2_map1", 
+    "creditMilestone": 45, 
+    "unlockCondition": "chapter_1_cleared", 
+    "bossId": "boss_lab_beast", 
+    "description": "樱花季校园生活与食堂秩序修复。樱花济手账被花瓣打乱，食堂供应记录被饥饿幽灵搅乱，小鱼干补给与便当订单陆续失踪，学术喵需要修复手账、追回美食。",
+    "zoneId": "cherry_blossom",
+    "schoolNodes": [
+      { "id": "cherry_path", "name": "樱花大道", "position": { "x": 675, "y": 540 }, "type": "explore" },
+      { "id": "canteen", "name": "同济大学食堂", "position": { "x": 980, "y": 560 }, "type": "resource" },
+      { "id": "sports_center", "name": "体育中心", "position": { "x": 400, "y": 670 }, "type": "rest" },
+      { "id": "dormitory", "name": "学生宿舍", "position": { "x": 1200, "y": 670 }, "type": "rest" },
+      { "id": "life_science", "name": "生命科学学院", "position": { "x": 950, "y": 450 }, "type": "study" }
+    ],
+    "memoryPoints": [
+      { "id": "mem_sakura", "name": "樱花季", "archiveId": "archive_sakura", "description": "同济最美的樱花季节" },
+      { "id": "mem_lizhuang", "name": "李庄旧事", "archiveId": "archive_lizhuang", "description": "同济大学在李庄的办学历史" }
+    ]
+  },
+  { 
+    "chapterId": 3, 
+    "name": "第三章：智械危机", 
+    "mapId": "ch3_map1", 
+    "creditMilestone": 80, 
+    "unlockCondition": "chapter_2_cleared", 
+    "bossId": "boss_history_guard", 
+    "description": "嘉定校区智械危机。图书馆迷雾与食堂危机背后的异常信号汇聚成混沌核心，校园智能设备过度追求效率，学术喵需要校准目标函数，在核心机房完成决战。",
+    "zoneId": "lab_district",
+    "schoolNodes": [
+      { "id": "museum", "name": "同济大学校史馆", "position": { "x": 1540, "y": 470 }, "type": "explore" },
+      { "id": "admin_building", "name": "行政楼", "position": { "x": 675, "y": 650 }, "type": "event" },
+      { "id": "engineering", "name": "工程学院", "position": { "x": 1275, "y": 440 }, "type": "combat" },
+      { "id": "physics", "name": "物理系", "position": { "x": 1250, "y": 380 }, "type": "study" },
+      { "id": "chemistry", "name": "化学系", "position": { "x": 1350, "y": 380 }, "type": "study" }
+    ],
+    "memoryPoints": [
+      { "id": "mem_history", "name": "校史探索", "archiveId": "archive_history", "description": "探索同济百年历史" },
+      { "id": "mem_engineering", "name": "工程精神", "archiveId": "archive_engineering", "description": "同济工程教育的传承" }
+    ]
+  },
+  { 
+    "chapterId": 4, 
+    "name": "终章：120周年校庆", 
+    "mapId": "ch4_map1", 
+    "creditMilestone": 120, 
+    "unlockCondition": "chapter_3_cleared", 
+    "bossId": "boss_final", 
+    "description": "120 周年校庆。集齐跨时代校史记忆：1907 起点、1923 定名、1927 国立、1940 李庄办学、1979 恢复对德交流、2000 合并新同济、2017/2022 双一流，点亮同舟共济终章。",
+    "zoneId": "anniversary",
+    "schoolNodes": [
+      { "id": "anniversary_square", "name": "校庆广场", "position": { "x": 1840, "y": 420 }, "type": "event" },
+      { "id": "main_gate", "name": "同济大学正门", "position": { "x": 100, "y": 520 }, "type": "event" },
+      { "id": "double_first", "name": "双一流展板", "position": { "x": 1900, "y": 400 }, "type": "info" },
+      { "id": "celebration_hall", "name": "庆典大厅", "position": { "x": 1850, "y": 350 }, "type": "boss" }
+    ],
+    "memoryPoints": [
+      { "id": "mem_1907", "name": "1907年建校", "archiveId": "archive_1907", "description": "同济医学堂在上海创立" },
+      { "id": "mem_1923", "name": "1923年定名", "archiveId": "archive_1923", "description": "正式定名为同济大学" },
+      { "id": "mem_1927", "name": "1927年国立", "archiveId": "archive_1927", "description": "成为国立大学" },
+      { "id": "mem_1940", "name": "1940年李庄", "archiveId": "archive_1940", "description": "迁至四川李庄办学" },
+      { "id": "mem_1979", "name": "1979年交流", "archiveId": "archive_1979", "description": "恢复对德交流" },
+      { "id": "mem_2000", "name": "2000年合并", "archiveId": "archive_2000", "description": "与上海铁道大学合并" },
+      { "id": "mem_2017", "name": "2017年双一流", "archiveId": "archive_2017", "description": "入选双一流建设高校" },
+      { "id": "mem_2022", "name": "2022年续建", "archiveId": "archive_2022", "description": "继续双一流建设" }
+    ]
+  }
 ]

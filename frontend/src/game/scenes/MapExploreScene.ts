@@ -46,8 +46,12 @@ export class MapExploreScene extends Phaser.Scene {
   private monsterAI!: MonsterAISystem
   private chapterTitleText!: Phaser.GameObjects.Text
   private creditsText!: Phaser.GameObjects.Text
+  private zoneText!: Phaser.GameObjects.Text
   private currentChapter = 1
   private playerRoleId = 'lina'
+  private currentZone = ''
+  private zones: any[] = []
+  private zoneParticles: Map<string, Phaser.GameObjects.Particles.ParticleEmitter> = new Map()
   // 步骤 2 新增字段
   private obstaclesGroup!: Phaser.Physics.Arcade.StaticGroup
   private projectilesGroup!: Phaser.GameObjects.Group
@@ -377,6 +381,19 @@ export class MapExploreScene extends Phaser.Scene {
     )
     this.creditsText.setScrollFactor(0)
 
+    // 区域系统：加载区域配置并创建粒子效果
+    this.zones = zhongheMap?.zones || []
+    this.initializeZoneSystem()
+
+    this.zoneText = this.add.text(20, 80, '', {
+      fontFamily: '"Microsoft YaHei", Arial, sans-serif',
+      fontSize: '13px',
+      color: '#4ECDC4',
+      stroke: '#000000',
+      strokeThickness: 2
+    })
+    this.zoneText.setScrollFactor(0)
+
     // 步骤 2：形态显示文本 + J/L 键注册
     this.formText = this.add.text(20, 80, '形态: 🐱 猫形（按 L 切换 / 按 J 攻击）', {
       fontFamily: '"Microsoft YaHei", Arial, sans-serif',
@@ -398,6 +415,9 @@ export class MapExploreScene extends Phaser.Scene {
       })
       this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R).on('down', () => {
         this.cameras.main.pan(this.player.x, this.player.y, 280, 'Sine.easeInOut')
+      })
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M).on('down', () => {
+        this.scene.start('WorldMapScene')
       })
     }
 
@@ -623,16 +643,14 @@ export class MapExploreScene extends Phaser.Scene {
         this.player.setFlipX(dx < 0)
       }
     } else if (!isMoving && this.player.anims) {
-      // 步骤 1 v2：猫形静止时显示 transform-7 帧（参考 app.js showCatIdleFrame）
       if (this.currentForm === 'cat' && this.preferredSpriteKey) {
-        const transformAnim = this.actionsList.find(a => a.id === 'transform')
-        if (transformAnim) {
-          const catIdleFrame = transformAnim.row * COLS + 7
-          if (this.player.anims.isPlaying) this.player.anims.pause()
-          this.player.setFrame(catIdleFrame)
+        const catIdleAnimKey = `catRun_${this.playerRoleId}`
+        if (this.anims.exists(catIdleAnimKey)) {
+          this.player.play(catIdleAnimKey, true)
+        } else if (this.anims.exists(idleAnimKey)) {
+          this.player.play(idleAnimKey, true)
         }
       } else {
-        // 人形：切到 idle 动画
         if (this.anims.exists(idleAnimKey) && this.player.anims.currentAnim?.key !== idleAnimKey) {
           this.player.play(idleAnimKey, true)
         } else if (!this.anims.exists(idleAnimKey) && this.player.anims.isPlaying) {
@@ -683,6 +701,70 @@ export class MapExploreScene extends Phaser.Scene {
       this.creditsText.setText(
         `累计学分: ${gameStore.resources?.credits || 0}  章节学分: ${gameStore.progress?.chapterCredits || 0}`
       )
+    }
+
+    this.checkZone()
+  }
+
+  private initializeZoneSystem() {
+    if (this.zones.length === 0) return
+
+    this.zones.forEach(zone => {
+      const hex = parseInt(zone.color.replace('#', ''), 16) || 0xffffff
+      const zoneColor = [(hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff]
+      
+      const emitter = this.add.particles(zone.x + zone.w / 2, zone.y + zone.h / 2, 'particle', {
+        x: { min: zone.x, max: zone.x + zone.w },
+        y: { min: zone.y, max: zone.y + zone.h },
+        color: zoneColor,
+        alpha: { start: 0.6, end: 0 },
+        scale: { start: 3, end: 0.5 },
+        speed: { min: 5, max: 15 },
+        angle: { min: 0, max: 360 },
+        lifespan: 2000,
+        frequency: 500,
+        blendMode: 'ADD',
+        visible: false
+      })
+      this.zoneParticles.set(zone.id, emitter)
+    })
+  }
+
+  private checkZone() {
+    if (this.zones.length === 0) return
+
+    let foundZone: any = null
+    for (const zone of this.zones) {
+      if (
+        this.player.x >= zone.x &&
+        this.player.x <= zone.x + zone.w &&
+        this.player.y >= zone.y &&
+        this.player.y <= zone.y + zone.h
+      ) {
+        foundZone = zone
+        break
+      }
+    }
+
+    if (foundZone && foundZone.id !== this.currentZone) {
+      this.currentZone = foundZone.id
+      if (this.zoneText) {
+        this.zoneText.setText(`📍 ${foundZone.name}`)
+      }
+      const gameStore = useGameStore()
+      gameStore.setCurrentZone(foundZone.id)
+
+      this.zoneParticles.forEach((emitter, id) => {
+        emitter.setVisible(id === foundZone.id)
+      })
+    } else if (!foundZone && this.currentZone) {
+      this.currentZone = ''
+      if (this.zoneText) {
+        this.zoneText.setText('')
+      }
+      this.zoneParticles.forEach(emitter => {
+        emitter.setVisible(false)
+      })
     }
   }
 
@@ -964,7 +1046,6 @@ export class MapExploreScene extends Phaser.Scene {
    */
   private preparePlayerAnimations(roleId: string, spriteKey: string) {
     if (!this.actionsList || this.actionsList.length === 0) {
-      // fallback：旧 walk 动画（64×64 切分）
       this.createLegacyWalkAnimation(spriteKey)
       return
     }
@@ -981,9 +1062,19 @@ export class MapExploreScene extends Phaser.Scene {
       this.actionsList.forEach((action: ActionDef) => {
         const animKey = `${action.id}_${roleId}`
         if (this.anims.exists(animKey)) return
+
+        const y0 = action.row * frameHeight
+        for (let col = 0; col < COLS; col++) {
+          const frameName = `${roleId}_map_${action.id}-${col}`
+          const x0 = col * frameWidth
+          if (!texture.has(frameName)) {
+            texture.add(frameName, 0, x0, y0, frameWidth, frameHeight)
+          }
+        }
+
         const frames = action.frames.map((colIdx: number) => ({
           key: spriteKey,
-          frame: action.row * COLS + colIdx
+          frame: `${roleId}_map_${action.id}-${colIdx}`
         }))
         this.anims.create({
           key: animKey,
@@ -1316,6 +1407,11 @@ export class MapExploreScene extends Phaser.Scene {
       if (p.sprite && p.sprite.active) p.sprite.destroy()
     })
     this.activeProjectiles = []
+    // 清理区域粒子
+    this.zoneParticles.forEach(emitter => {
+      emitter.stop()
+    })
+    this.zoneParticles.clear()
     // P0/P1: 清理新增资源 —— 阴影、moveTarget、tween
     if (this.playerShadow) {
       this.playerShadow.destroy()

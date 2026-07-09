@@ -16,7 +16,7 @@
             <img
               :key="currentForm + roleId"
               :src="currentForm === 'human'
-                ? `/assets/characters/${roleId}.png`
+                ? `/assets/portraits/${roleId}.png`
                 : `/assets/sprites/${roleId}.png`"
               :alt="gameStore.player?.name"
               class="w-full h-full object-cover portrait-fade"

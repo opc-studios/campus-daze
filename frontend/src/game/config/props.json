@@ -1,0 +1,239 @@
+{
+  "atlas": "assets/maps/zhonghe-plaza-props-v4.png",
+  "tileWidth": 64,
+  "tileHeight": 64,
+  "categories": [
+    {
+      "id": "environment",
+      "name": "环境物件",
+      "description": "用于构建场景背景的环境元素"
+    },
+    {
+      "id": "interactive",
+      "name": "交互物件",
+      "description": "可与玩家产生交互的物件"
+    },
+    {
+      "id": "decorative",
+      "name": "装饰物件",
+      "description": "用于美化场景的装饰元素"
+    },
+    {
+      "id": "obstacle",
+      "name": "障碍物件",
+      "description": "阻挡玩家移动的障碍物"
+    }
+  ],
+  "props": [
+    {
+      "id": "prop_flower_bed",
+      "name": "花坛",
+      "category": "environment",
+      "sprite": { "x": 0, "y": 0, "w": 64, "h": 64 },
+      "collision": { "width": 64, "height": 32 },
+      "zIndex": 1,
+      "description": "樱花季盛放的花坛"
+    },
+    {
+      "id": "prop_tree_small",
+      "name": "小树",
+      "category": "environment",
+      "sprite": { "x": 64, "y": 0, "w": 64, "h": 96 },
+      "collision": { "width": 48, "height": 32 },
+      "zIndex": 2,
+      "description": "校园里的小树"
+    },
+    {
+      "id": "prop_tree_large",
+      "name": "大树",
+      "category": "environment",
+      "sprite": { "x": 128, "y": 0, "w": 96, "h": 128 },
+      "collision": { "width": 80, "height": 48 },
+      "zIndex": 3,
+      "description": "校园里的大树"
+    },
+    {
+      "id": "prop_lamp_post",
+      "name": "路灯",
+      "category": "environment",
+      "sprite": { "x": 224, "y": 0, "w": 32, "h": 96 },
+      "collision": { "width": 16, "height": 16 },
+      "zIndex": 2,
+      "description": "校园路灯"
+    },
+    {
+      "id": "prop_bench",
+      "name": "长椅",
+      "category": "interactive",
+      "sprite": { "x": 256, "y": 0, "w": 96, "h": 48 },
+      "collision": { "width": 96, "height": 32 },
+      "zIndex": 1,
+      "description": "可供休息的长椅",
+      "interactType": "rest",
+      "effect": { "restoreHp": 20 }
+    },
+    {
+      "id": "prop_pillar",
+      "name": "柱子",
+      "category": "obstacle",
+      "sprite": { "x": 352, "y": 0, "w": 48, "h": 128 },
+      "collision": { "width": 48, "height": 128 },
+      "zIndex": 2,
+      "description": "建筑立柱"
+    },
+    {
+      "id": "prop_flag",
+      "name": "旗帜",
+      "category": "decorative",
+      "sprite": { "x": 400, "y": 0, "w": 48, "h": 80 },
+      "collision": null,
+      "zIndex": 3,
+      "description": "飘扬的旗帜"
+    },
+    {
+      "id": "prop_cherry_blossom",
+      "name": "樱花树",
+      "category": "environment",
+      "sprite": { "x": 448, "y": 0, "w": 128, "h": 160 },
+      "collision": { "width": 96, "height": 48 },
+      "zIndex": 3,
+      "description": "盛开的樱花树",
+      "season": "spring"
+    },
+    {
+      "id": "prop_stone_lantern",
+      "name": "石灯笼",
+      "category": "decorative",
+      "sprite": { "x": 576, "y": 0, "w": 48, "h": 64 },
+      "collision": { "width": 32, "height": 32 },
+      "zIndex": 2,
+      "description": "日式石灯笼"
+    },
+    {
+      "id": "prop_sign_post",
+      "name": "指示牌",
+      "category": "interactive",
+      "sprite": { "x": 624, "y": 0, "w": 48, "h": 80 },
+      "collision": { "width": 32, "height": 16 },
+      "zIndex": 2,
+      "description": "校园指示牌",
+      "interactType": "info",
+      "message": "欢迎来到同济大学！"
+    },
+    {
+      "id": "prop_trash_can",
+      "name": "垃圾桶",
+      "category": "environment",
+      "sprite": { "x": 672, "y": 0, "w": 32, "h": 48 },
+      "collision": { "width": 32, "height": 48 },
+      "zIndex": 1,
+      "description": "校园垃圾桶"
+    },
+    {
+      "id": "prop_bike_rack",
+      "name": "自行车架",
+      "category": "environment",
+      "sprite": { "x": 704, "y": 0, "w": 96, "h": 32 },
+      "collision": { "width": 96, "height": 24 },
+      "zIndex": 1,
+      "description": "自行车停放架"
+    },
+    {
+      "id": "prop_water_fountain",
+      "name": "饮水处",
+      "category": "interactive",
+      "sprite": { "x": 800, "y": 0, "w": 48, "h": 64 },
+      "collision": { "width": 48, "height": 48 },
+      "zIndex": 1,
+      "description": "校园饮水处",
+      "interactType": "drink",
+      "effect": { "restoreHp": 10 }
+    },
+    {
+      "id": "prop_bus_stop",
+      "name": "公交站",
+      "category": "interactive",
+      "sprite": { "x": 848, "y": 0, "w": 128, "h": 64 },
+      "collision": { "width": 128, "height": 48 },
+      "zIndex": 1,
+      "description": "校园公交站",
+      "interactType": "transport",
+      "destination": "campus_gate"
+    },
+    {
+      "id": "prop_book_shelf",
+      "name": "书架",
+      "category": "environment",
+      "sprite": { "x": 976, "y": 0, "w": 96, "h": 128 },
+      "collision": { "width": 96, "height": 128 },
+      "zIndex": 2,
+      "description": "图书馆书架"
+    },
+    {
+      "id": "prop_desk",
+      "name": "书桌",
+      "category": "interactive",
+      "sprite": { "x": 1072, "y": 0, "w": 96, "h": 72 },
+      "collision": { "width": 96, "height": 64 },
+      "zIndex": 1,
+      "description": "自习书桌",
+      "interactType": "study",
+      "effect": { "expBonus": 1.2 }
+    },
+    {
+      "id": "prop_computer",
+      "name": "电脑",
+      "category": "interactive",
+      "sprite": { "x": 1168, "y": 0, "w": 64, "h": 64 },
+      "collision": { "width": 64, "height": 48 },
+      "zIndex": 2,
+      "description": "机房电脑",
+      "interactType": "use",
+      "effect": { "skillPointBonus": 1 }
+    },
+    {
+      "id": "prop_potted_plant",
+      "name": "盆栽",
+      "category": "decorative",
+      "sprite": { "x": 1232, "y": 0, "w": 48, "h": 64 },
+      "collision": { "width": 32, "height": 48 },
+      "zIndex": 1,
+      "description": "室内盆栽"
+    },
+    {
+      "id": "prop_chalkboard",
+      "name": "黑板",
+      "category": "environment",
+      "sprite": { "x": 1280, "y": 0, "w": 160, "h": 96 },
+      "collision": null,
+      "zIndex": 2,
+      "description": "教室黑板",
+      "message": "AI 与协议革命"
+    },
+    {
+      "id": "prop_window",
+      "name": "窗户",
+      "category": "environment",
+      "sprite": { "x": 1440, "y": 0, "w": 96, "h": 96 },
+      "collision": null,
+      "zIndex": 1,
+      "description": "教室窗户"
+    }
+  ],
+  "style": {
+    "colorPalette": {
+      "primary": "#1A3C6E",
+      "secondary": "#4ECDC4",
+      "accent": "#FFB7C5",
+      "background": "#F5F5F5",
+      "grass": "#98FB98",
+      "path": "#D2B48C",
+      "building": "#87CEEB",
+      "cherryBlossom": "#FFB6C1",
+      "night": "#1a1a2e"
+    },
+    "designLanguage": "清晰、明亮、略带手绘质感的校园 RPG 风格",
+    "textureStyle": "像素风格与手绘风格结合",
+    "lighting": "自然光照明，樱花季有粉色光晕效果"
+  }
+}

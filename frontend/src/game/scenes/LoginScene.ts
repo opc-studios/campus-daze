@@ -1,26 +1,12 @@
 import Phaser from 'phaser'
 
-const ROLE_IDS = ['lina', 'ayu', 'zhixia', 'jiangxun', 'laodeng']
-const ROLE_NAMES: Record<string, string> = {
-  lina: '莉娜',
-  ayu: '阿宇',
-  zhixia: '知夏',
-  jiangxun: '江寻',
-  laodeng: '老登'
-}
-
 /**
- * 登录场景：海报背景 + 角色立绘轮播 + 粒子特效 + 标题动画
- * 作为 LoginView.vue 的 Phaser 背景层
+ * 登录场景：海报背景 + 粒子特效 + 标题动画
+ * 作为 LoginView.vue 的 Phaser 背景层（已移除角色立绘轮播，避免遮挡登录表单）
  */
 export class LoginScene extends Phaser.Scene {
-  private portrait!: Phaser.GameObjects.Image
-  private portraitFrame!: Phaser.GameObjects.Graphics
-  private nameText!: Phaser.GameObjects.Text
   private titleText!: Phaser.GameObjects.Text
   private subTitleText!: Phaser.GameObjects.Text
-  private currentIndex = 0
-  private switchTimer!: Phaser.Time.TimerEvent
   private particles!: Phaser.GameObjects.Particles.ParticleEmitter
 
   constructor() {
@@ -32,13 +18,6 @@ export class LoginScene extends Phaser.Scene {
     if (!this.textures.exists('poster')) {
       this.load.image('poster', '/assets/poster/gdd-cover.png')
     }
-    // 5 立绘
-    ROLE_IDS.forEach(id => {
-      const key = `portrait_${id}`
-      if (!this.textures.exists(key)) {
-        this.load.image(key, `/assets/characters/${id}.png`)
-      }
-    })
     // 生成粒子贴图（白色圆点）
     if (!this.textures.exists('particle_dot')) {
       const g = this.add.graphics()
@@ -116,58 +95,7 @@ export class LoginScene extends Phaser.Scene {
       delay: 700
     })
 
-    // 3. 角色立绘展示框（右侧）
-    const portraitX = width - 280
-    const portraitY = height / 2 + 30
-
-    // 立绘背景框（霓虹边框）
-    this.portraitFrame = this.add.graphics()
-    this.drawPortraitFrame(portraitX, portraitY, 240, 360)
-    this.portraitFrame.setAlpha(0)
-    this.tweens.add({
-      targets: this.portraitFrame,
-      alpha: 1,
-      duration: 500,
-      delay: 900
-    })
-
-    // 立绘本体
-    this.portrait = this.add.image(portraitX, portraitY, `portrait_${ROLE_IDS[0]}`)
-    this.portrait.setAlpha(0)
-    this.scalePortrait(this.portrait, 240, 360)
-    this.tweens.add({
-      targets: this.portrait,
-      alpha: 1,
-      duration: 600,
-      delay: 1000
-    })
-
-    // 角色名
-    this.nameText = this.add.text(portraitX, portraitY + 200, ROLE_NAMES[ROLE_IDS[0]], {
-      fontFamily: '"Microsoft YaHei", sans-serif',
-      fontSize: '28px',
-      color: '#FFFFFF',
-      stroke: '#1A3C6E',
-      strokeThickness: 4,
-      fontStyle: 'bold'
-    })
-    this.nameText.setOrigin(0.5, 0.5)
-    this.nameText.setAlpha(0)
-    this.tweens.add({
-      targets: this.nameText,
-      alpha: 1,
-      duration: 600,
-      delay: 1100
-    })
-
-    // 4. 立绘轮播（每 3.5 秒切换）
-    this.switchTimer = this.time.addEvent({
-      delay: 3500,
-      loop: true,
-      callback: () => this.switchPortrait()
-    })
-
-    // 5. 粒子特效（飘落的光点）
+    // 粒子特效（飘落的光点）
     this.particles = this.add.particles(0, 0, 'particle_dot', {
       x: { min: 0, max: width },
       y: -10,
@@ -183,7 +111,7 @@ export class LoginScene extends Phaser.Scene {
     this.particles.setDepth(10)
 
     // 6. 底部提示
-    const hint = this.add.text(width / 2, height - 40, '在右侧表单登录 · 或注册新冒险者', {
+    const hint = this.add.text(width / 2, height - 40, '登录或注册新冒险者', {
       fontFamily: '"Microsoft YaHei", sans-serif',
       fontSize: '16px',
       color: '#FFB7C5',
@@ -204,54 +132,7 @@ export class LoginScene extends Phaser.Scene {
     })
   }
 
-  /** 绘制立绘霓虹边框 */
-  private drawPortraitFrame(x: number, y: number, w: number, h: number) {
-    this.portraitFrame.clear()
-    // 外发光
-    this.portraitFrame.fillStyle(0x000000, 0.4)
-    this.portraitFrame.fillRoundedRect(x - w / 2 - 6, y - h / 2 - 6, w + 12, h + 12, 12)
-    // 边框
-    this.portraitFrame.lineStyle(3, 0xFFB7C5, 1)
-    this.portraitFrame.strokeRoundedRect(x - w / 2, y - h / 2, w, h, 8)
-    // 内边框
-    this.portraitFrame.lineStyle(1, 0xFFFFFF, 0.5)
-    this.portraitFrame.strokeRoundedRect(x - w / 2 + 4, y - h / 2 + 4, w - 8, h - 8, 6)
-  }
-
-  /** 按比例缩放立绘到框内 */
-  private scalePortrait(img: Phaser.GameObjects.Image, maxW: number, maxH: number) {
-    const tex = img.texture.getSourceImage()
-    const scaleX = maxW / tex.width
-    const scaleY = maxH / tex.height
-    img.setScale(Math.min(scaleX, scaleY))
-  }
-
-  /** 切换角色立绘（淡出 → 换图 → 淡入） */
-  private switchPortrait() {
-    this.currentIndex = (this.currentIndex + 1) % ROLE_IDS.length
-    const nextId = ROLE_IDS[this.currentIndex]
-
-    this.tweens.add({
-      targets: [this.portrait, this.nameText],
-      alpha: 0,
-      duration: 300,
-      ease: 'Power2',
-      onComplete: () => {
-        this.portrait.setTexture(`portrait_${nextId}`)
-        this.scalePortrait(this.portrait, 240, 360)
-        this.nameText.setText(ROLE_NAMES[nextId])
-        this.tweens.add({
-          targets: [this.portrait, this.nameText],
-          alpha: 1,
-          duration: 400,
-          ease: 'Power2'
-        })
-      }
-    })
-  }
-
   shutdown() {
-    if (this.switchTimer) this.switchTimer.remove()
     if (this.particles) this.particles.destroy()
   }
 }

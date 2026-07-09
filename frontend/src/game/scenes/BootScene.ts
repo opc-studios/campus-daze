@@ -11,6 +11,9 @@ import puzzlesConfig from '../config/puzzles.json'
 import actionsConfig from '../config/actions.json'
 import equipmentConfig from '../config/equipment.json'
 import obstaclesConfig from '../config/obstacles.json'
+import worldMapConfig from '../config/world-map.json'
+import propsConfig from '../config/props.json'
+import skillActionsConfig from '../config/skill-actions.json'
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -78,6 +81,9 @@ export class BootScene extends Phaser.Scene {
     this.cache.json.add('actions', actionsConfig)
     this.cache.json.add('equipment', equipmentConfig)
     this.cache.json.add('obstacles', obstaclesConfig)
+    this.cache.json.add('worldMap', worldMapConfig)
+    this.cache.json.add('props', propsConfig)
+    this.cache.json.add('skillActions', skillActionsConfig)
     // zhongheMap 已通过 this.load.json 在 preload 中加载到 cache
 
     this.scene.start('PreloaderScene')

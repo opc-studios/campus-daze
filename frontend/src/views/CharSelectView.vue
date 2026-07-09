@@ -2,7 +2,9 @@
   <div class="min-h-screen bg-gradient-to-br from-[#FAFAF5] to-[#FFB7C5] p-8">
     <div class="max-w-6xl mx-auto">
       <h1 class="text-4xl font-bold text-[#1A3C6E] mb-4 text-center">选择你的角色</h1>
-      <p class="text-gray-600 text-center mb-12">选定后不可更换，请慎重选择</p>
+      <p class="text-gray-600 text-center mb-4">选定后不可更换，请慎重选择</p>
+
+      <PortraitCarousel />
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div
@@ -19,7 +21,7 @@
           <div class="text-center mb-4">
             <div class="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden border-4 border-[#FFB7C5] shadow-md bg-gradient-to-br from-[#FFE5EC] to-[#FFB7C5]">
               <img
-                :src="`/assets/characters/${role.roleId}.png`"
+                :src="`/assets/portraits/${role.roleId}.png`"
                 :alt="role.name"
                 class="w-full h-full object-cover"
                 @error="onPortraitError"
@@ -209,6 +211,7 @@ import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import rolesConfig from '../game/config/roles.json'
 import actionsConfig from '../game/config/actions.json'
+import PortraitCarousel from '../components/PortraitCarousel.vue'
 import type { RoleId } from '../types/game'
 
 const router = useRouter()

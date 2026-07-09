@@ -1,4 +1,4 @@
-import type { CombatEntity, ActiveSkill, CombatLog, CombatState, SkillEffect, PassiveSkill } from './types'
+import type { CombatEntity, ActiveSkill, CombatLog, CombatState, SkillEffect } from './types'
 import {
   calcBaseDamage,
   calcSkillDamage,

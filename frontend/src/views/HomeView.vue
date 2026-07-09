@@ -124,7 +124,7 @@
               </g>
             </g>
 
-            <g @click="handleCatClick({ id: 'cat', action: () => router.push('/growth') } as Hotspot)" class="cursor-pointer" :class="{ 'cat-bounce': catBouncing }">
+            <g @click="router.push('/growth')" class="cursor-pointer" :class="{ 'cat-bounce': catBouncing }">
               <ellipse cx="640" cy="660" rx="80" ry="14" fill="#000000" opacity="0.2" />
               <circle cx="640" cy="560" r="60" fill="#FFD1DC" stroke="#FFFFFF" stroke-width="3" />
               <polygon points="610,540 615,505 630,535" fill="#FFD1DC" stroke="#FFFFFF" stroke-width="2" />

@@ -39,6 +39,9 @@ export interface PlayerState {
   combatStats: CombatStats
   unlockedSkills: string[]
   equippedSkills: [string, string | null, string | null]
+  currentHp?: number
+  buffs?: { id: string; name: string; duration: number; effect: string }[]
+  debuffs?: { id: string; name: string; duration: number; effect: string }[]
 }
 
 export interface ResourcesState {
@@ -93,6 +96,7 @@ export interface MapState {
   revealedRegions: string[]
   completedNodes: string[]
   nodeCooldowns: Record<string, number>
+  currentZone?: string
 }
 
 export interface MonsterInfo {
@@ -127,6 +131,8 @@ export interface CombatInfo {
     rewards: Reward[]
     createdAt: number
   }
+  comboCount?: number
+  shield?: number
 }
 
 export interface GameState {
@@ -139,4 +145,40 @@ export interface GameState {
   combat: CombatInfo
   inventory: Record<string, number>
   equipped: Record<string, string | undefined>
+  tasks?: Array<{
+    id: string
+    name: string
+    description: string
+    type: 'main' | 'side' | 'daily'
+    progress: number
+    target: number
+    rewards: { exp?: number; coins?: number; credits?: number; items?: string[] }
+    completed: boolean
+    claimed: boolean
+  }>
+  collections?: Array<{
+    id: string
+    name: string
+    description: string
+    category: string
+    rarity: string
+    obtained: boolean
+    obtainedAt?: number
+  }>
+  notifications?: Array<{
+    id: string
+    type: string
+    title: string
+    message: string
+    data?: Record<string, any>
+    timestamp: number
+  }>
+  activeBuffs?: Array<{
+    id: string
+    name: string
+    icon: string
+    duration: number
+    effect: Record<string, any>
+  }>
+  nextCombatShield?: number
 }

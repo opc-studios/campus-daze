@@ -82,9 +82,9 @@ export class PreloaderScene extends Phaser.Scene {
       console.warn(`[PreloaderScene] Failed to load: ${file.key} - ${file.url}`)
     })
 
-    // 5 张主角立绘
+    // 5 张主角立绘（参考 efv.tju2025mem3.me，使用 portraits 目录）
     ROLE_IDS.forEach(id => {
-      this.load.image(`portrait_${id}`, `/assets/characters/${id}.png`)
+      this.load.image(`portrait_${id}`, `/assets/portraits/${id}.png`)
       this.totalCount++
     })
 
@@ -104,9 +104,9 @@ export class PreloaderScene extends Phaser.Scene {
 
     // === 新增素材（B3+D1）===
 
-    // 3 种法杖精灵（紫晶/樱花/开题星）
+    // 3 种法杖精灵（紫晶/樱花/开题星，参考 efv.tju2025mem3.me 使用 -sprite-v3 版本）
     ;['amethyst', 'sakura', 'thesis'].forEach(wand => {
-      this.load.image(`wand_lina_${wand}`, `/assets/weapons/lina-${wand}-wand.png`)
+      this.load.image(`wand_lina_${wand}`, `/assets/weapons/lina-${wand}-wand-sprite-v3.png`)
       this.totalCount++
     })
 
@@ -152,13 +152,23 @@ export class PreloaderScene extends Phaser.Scene {
     })
     this.totalCount++
 
-    // 道具图集（普通 image，frame 切片在场景内处理）
-    this.load.image('props_atlas', '/assets/maps/zhonghe-plaza-props-atlas.png')
+    // 道具图集（参考 efv.tju2025mem3.me，含宏物件图集）
+    this.load.image('props_atlas', '/assets/maps/props/zhonghe-plaza-props-atlas-v1.png')
+    this.load.image('macro_props_atlas', '/assets/maps/props/zhonghe-plaza-macro-props-v1.png')
+    this.load.image('tileset_zhonghe', '/assets/maps/tilesets/zhonghe-plaza-ground-tileset-v1.png')
+    this.totalCount += 3
+
+    // 世界地图主图
+    this.load.image('world_map', '/assets/maps/tongji-siping-core-overworld-v4.png')
     this.totalCount++
 
-    // 莉娜/阿宇新基础精灵图 v10（更精细的行走动画）
-    this.load.image('sprite_lina_v10', '/assets/sprites/lina-sprites-v10.png')
-    this.load.image('sprite_ayu_v10', '/assets/sprites/ayu-sprites-v10.png')
+    // 新物件图集 v4
+    this.load.image('props_atlas_v4', '/assets/maps/zhonghe-plaza-props-v4.png')
+    this.totalCount++
+
+    // 莉娜/阿宇新基础精灵图 v10（参考 efv.tju2025mem3.me 测试页，8×8 网格动画）
+    this.load.image('sprite_lina_v10', '/assets/sprites/lina-sprites-v10-anchored-expanded.png')
+    this.load.image('sprite_ayu_v10', '/assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png')
     this.totalCount += 2
 
     // === 怪物素材（资源整合）===

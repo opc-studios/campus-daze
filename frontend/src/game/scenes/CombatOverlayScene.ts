@@ -18,6 +18,22 @@ interface ActionDef {
   frames: number[]
 }
 
+interface ActionSequenceFrame {
+  frame: number
+  delay: number
+  effect: string | null
+}
+
+interface ActionSequenceConfig {
+  frames: number[]
+  fps: number
+  repeat: number
+  type: string
+  followUp: string | null
+  effect?: string
+  sequence?: ActionSequenceFrame[]
+}
+
 interface EquipmentDef {
   id: string
   name: string
@@ -59,13 +75,14 @@ export class CombatOverlayScene extends Phaser.Scene {
   private isBoss = false
   // 资源整合：怪物立绘帧名（来自 monsters.json.spriteFrame，对应 enemies_atlas 帧）
   private monsterSpriteFrame = ''
-  private monsterName = ''
+  
   private playerSprite!: Phaser.GameObjects.Sprite
   private enemySprite!: Phaser.GameObjects.Container
   private lastLogCount = 0
   private playerRoleId = 'lina'
   private equipmentList: EquipmentDef[] = []
   private actionsList: ActionDef[] = []
+  private skillActionsConfig: any = {}
   private displayedPlayerHp = 1.0
   private displayedEnemyHp = 1.0
   private projectilesGroup!: Phaser.GameObjects.Group
@@ -86,6 +103,7 @@ export class CombatOverlayScene extends Phaser.Scene {
     const rolesConfig = this.cache.json.get('roles') || []
     this.actionsList = this.cache.json.get('actions') || []
     this.equipmentList = this.cache.json.get('equipment') || []
+    this.skillActionsConfig = this.cache.json.get('skillActions') || {}
 
     this.monsterId = data.monsterId
     this.nodeId = data.nodeId
@@ -97,9 +115,7 @@ export class CombatOverlayScene extends Phaser.Scene {
       return
     }
 
-    // 资源整合：保存怪物立绘帧名 + 怪物名（供 create() 使用）
     this.monsterSpriteFrame = monster.spriteFrame || ''
-    this.monsterName = monster.name || 'M'
 
     const playerState = gameStore.player
     if (!playerState) {
@@ -540,6 +556,74 @@ export class CombatOverlayScene extends Phaser.Scene {
         }
       })
     }
+
+    // 创建技能专属动作动画（基于 skill-actions.json）
+    this.prepareSkillAnimations(roleId, textureKey, frameWidth, frameHeight)
+  }
+
+  /**
+   * 创建技能专属动作动画
+   */
+  private prepareSkillAnimations(roleId: string, textureKey: string, frameWidth: number, frameHeight: number) {
+    const actionSequences = this.skillActionsConfig.actionSequences || {}
+    const roleSequences = actionSequences[roleId] || {}
+
+    const rowMapping: { [key: string]: number } = {
+      'idle': 0,
+      'attack_basic': 2,
+      'attack_skill1': 2,
+      'attack_combo': 2,
+      'summon': 5,
+      'buff_charge': 5,
+      'hit': 3,
+      'death': 4,
+      'transform': 5
+    }
+
+    Object.entries(roleSequences).forEach(([actionName, config]) => {
+      const sequenceConfig = config as ActionSequenceConfig
+      const row = rowMapping[actionName] ?? 2
+
+      const y0 = row * frameHeight
+      for (let col = 0; col < COLS; col++) {
+        const frameName = `${roleId}_combat_${actionName}-${col}`
+        const x0 = col * frameWidth
+        const texture = this.textures.get(textureKey)
+        if (texture && !texture.has(frameName)) {
+          texture.add(frameName, 0, x0, y0, frameWidth, frameHeight)
+        }
+      }
+
+      const onceKey = `${roleId}_combat_${actionName}-once`
+      if (!this.anims.exists(onceKey)) {
+        const frames = sequenceConfig.frames.map(col => ({
+          key: textureKey,
+          frame: `${roleId}_combat_${actionName}-${col}`
+        }))
+        this.anims.create({
+          key: onceKey,
+          frames,
+          frameRate: Math.max(1, sequenceConfig.fps * ANIMATION_SPEED_FACTOR),
+          repeat: sequenceConfig.repeat
+        })
+      }
+
+      if (sequenceConfig.type === 'loop') {
+        const loopKey = `${roleId}_combat_${actionName}`
+        if (!this.anims.exists(loopKey)) {
+          const frames = sequenceConfig.frames.map(col => ({
+            key: textureKey,
+            frame: `${roleId}_combat_${actionName}-${col}`
+          }))
+          this.anims.create({
+            key: loopKey,
+            frames,
+            frameRate: Math.max(1, sequenceConfig.fps * ANIMATION_SPEED_FACTOR),
+            repeat: -1
+          })
+        }
+      }
+    })
   }
 
   /**
@@ -551,28 +635,15 @@ export class CombatOverlayScene extends Phaser.Scene {
     const isPlayerAction = log.actorId === 'player'
     const targetIsPlayer = log.targetId === 'player'
 
-    if (isPlayerAction && log.action === 'attack') {
-      // 玩家攻击：播放 attack 动作帧动画 + 发射弹射物
-      const attackKey = `${this.playerRoleId}_combat_attack-once`
-      const equipAttackKey = this.playerRoleId === 'lina' && this.equipmentList.length > 0
-        ? `${this.playerRoleId}_combat_attack_${this.equipmentList[0].id}-once`
-        : attackKey
-      const finalKey = this.anims.exists(equipAttackKey) ? equipAttackKey : attackKey
-      if (this.anims.exists(finalKey)) {
-        this.playerSprite.play(finalKey, true)
-        this.playerSprite.once('animationcomplete', () => {
-          const idleKey = `${this.playerRoleId}_combat_idle`
-          if (this.anims.exists(idleKey)) this.playerSprite.play(idleKey, true)
-        })
-      }
-      this.castProjectile()
+    if (isPlayerAction) {
+      this.executeSkillAction(log)
       // 玩家普攻命中：怪物受击反馈 + 伤害数字
       if (log.damage && log.damage > 0) {
         this.flashEnemyDamage()
         this.showFloatingDamage(1130 + Phaser.Math.Between(-20, 20), 240, `${log.damage}`, '#ffffff')
       }
     } else if (targetIsPlayer && log.damage && log.damage > 0) {
-      // 玩家受击：播放 hit 动作帧动画 + 闪红
+      // 玩家受击：播放 hit 动作帧动画 + 闪红 + 物理反冲
       const hitKey = `${this.playerRoleId}_combat_hit-once`
       if (this.anims.exists(hitKey)) {
         this.playerSprite.play(hitKey, true)
@@ -582,6 +653,7 @@ export class CombatOverlayScene extends Phaser.Scene {
         })
       }
       this.flashDamage()
+      this.applyHitRecoil()
     }
 
     // 5 战斗定位特效（基于 isCrit/effect.type）
@@ -596,6 +668,249 @@ export class CombatOverlayScene extends Phaser.Scene {
     if (log.action.includes('multi_hit')) this.showMultiHitEffect(log.damage || 0)
     if (log.action.includes('armor_pen')) this.showArmorPenEffect()
     if (log.action.includes('reflect')) this.showReflectEffect(targetIsPlayer ? 150 : 1130)
+  }
+
+  /**
+   * 根据技能 ID 执行对应的动作序列
+   */
+  private executeSkillAction(log: CombatLog) {
+    const skillId = this.extractSkillIdFromLog(log)
+    if (!skillId) {
+      this.playDefaultAttack()
+      return
+    }
+
+    const skillActionMap = this.skillActionsConfig.skillActionMap || {}
+    const actionMapping = skillActionMap[skillId]
+
+    if (actionMapping && actionMapping.roleId === this.playerRoleId) {
+      const actionName = actionMapping.action
+      this.playSkillAction(actionName)
+    } else {
+      this.playDefaultAttack()
+    }
+  }
+
+  /**
+   * 从战斗日志中提取技能 ID
+   */
+  private extractSkillIdFromLog(log: CombatLog): string | null {
+    const skillNames: { [key: string]: string } = {
+      '基础攻击': `${this.playerRoleId}_basic`,
+      '学风冲击': `${this.playerRoleId}_s1`,
+      '精灵召唤': `${this.playerRoleId}_s2`,
+      '知识风暴': `${this.playerRoleId}_s3`,
+      '学术共鸣': `${this.playerRoleId}_s4`,
+      '智慧之光': `${this.playerRoleId}_s5`,
+      '猛击': `${this.playerRoleId}_s1`,
+      '愈战愈勇': `${this.playerRoleId}_s2`,
+      '连击风暴': `${this.playerRoleId}_s3`,
+      '热血冲锋': `${this.playerRoleId}_s4`,
+      '不屈意志': `${this.playerRoleId}_s5`
+    }
+
+    for (const [actionName, skillId] of Object.entries(skillNames)) {
+      if (log.action.includes(actionName)) {
+        return skillId
+      }
+    }
+
+    if (log.action === 'attack') {
+      return `${this.playerRoleId}_basic`
+    }
+
+    return null
+  }
+
+  /**
+   * 播放技能动作序列
+   */
+  private playSkillAction(actionName: string) {
+    const actionSequences = this.skillActionsConfig.actionSequences || {}
+    const roleSequences = actionSequences[this.playerRoleId] || {}
+    const sequenceConfig = roleSequences[actionName] as ActionSequenceConfig
+
+    if (!sequenceConfig) {
+      this.playDefaultAttack()
+      return
+    }
+
+    const animKey = `${this.playerRoleId}_combat_${actionName}-once`
+
+    if (this.anims.exists(animKey)) {
+      this.playerSprite.play(animKey, true)
+
+      if (sequenceConfig.followUp) {
+        this.playerSprite.once('animationcomplete', () => {
+          const followUpKey = `${this.playerRoleId}_combat_${sequenceConfig.followUp}`
+          if (this.anims.exists(followUpKey)) {
+            this.playerSprite.play(followUpKey, true)
+          }
+        })
+      }
+
+      if (sequenceConfig.effect === 'projectile') {
+        this.castProjectile()
+      } else if (sequenceConfig.effect === 'summon') {
+        this.showSummonEffect()
+      } else if (sequenceConfig.effect === 'buff_aura') {
+        this.showBuffAuraEffect()
+      }
+
+      if (sequenceConfig.sequence) {
+        this.executeActionSequence(sequenceConfig.sequence)
+      }
+    } else {
+      this.playDefaultAttack()
+    }
+  }
+
+  /**
+   * 执行动作序列帧（带延迟的效果触发）
+   */
+  private executeActionSequence(sequence: ActionSequenceFrame[]) {
+    let totalDelay = 0
+    sequence.forEach((frame) => {
+      totalDelay += frame.delay
+      this.time.delayedCall(totalDelay, () => {
+        if (frame.effect === 'hit_check') {
+          this.triggerHitEffect()
+        } else if (frame.effect === 'knockback') {
+          this.triggerKnockback()
+        }
+      })
+    })
+  }
+
+  /**
+   * 播放默认攻击动作
+   */
+  private playDefaultAttack() {
+    const attackKey = `${this.playerRoleId}_combat_attack-once`
+    const equipAttackKey = this.playerRoleId === 'lina' && this.equipmentList.length > 0
+      ? `${this.playerRoleId}_combat_attack_${this.equipmentList[this.currentEquipIndex].id}-once`
+      : attackKey
+    const finalKey = this.anims.exists(equipAttackKey) ? equipAttackKey : attackKey
+
+    if (this.anims.exists(finalKey)) {
+      this.playerSprite.play(finalKey, true)
+      this.playerSprite.once('animationcomplete', () => {
+        const idleKey = `${this.playerRoleId}_combat_idle`
+        if (this.anims.exists(idleKey)) this.playerSprite.play(idleKey, true)
+      })
+    }
+
+    if (this.playerRoleId === 'lina') {
+      this.castProjectile()
+    }
+  }
+
+  /**
+   * 触发命中效果
+   */
+  private triggerHitEffect() {
+    if (this.playerRoleId === 'ayu') {
+      this.showSlashEffect(220, 280)
+    }
+  }
+
+  /**
+   * 触发击退效果
+   */
+  private triggerKnockback() {
+    if (this.enemySprite) {
+      this.tweens.add({
+        targets: this.enemySprite,
+        x: 1180,
+        duration: 300,
+        ease: 'Bounce.easeOut',
+        yoyo: true,
+        repeat: 1,
+        onComplete: () => {
+          if (this.enemySprite) this.enemySprite.x = 1130
+        }
+      })
+    }
+  }
+
+  /**
+   * 应用受击反冲效果
+   */
+  private applyHitRecoil() {
+    const collisionConfig = this.skillActionsConfig.collisionResponses?.hit
+    if (!collisionConfig) return
+
+    const recoilX = collisionConfig.recoilX || 10
+    const shakeIntensity = collisionConfig.shakeIntensity || 0.01
+    const shakeDuration = collisionConfig.shakeDuration || 150
+
+    this.tweens.add({
+      targets: this.playerSprite,
+      x: 150 - recoilX,
+      duration: 80,
+      ease: 'Sine.easeOut',
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => {
+        if (this.playerSprite) this.playerSprite.x = 150
+      }
+    })
+
+    this.cameras.main.shake(shakeDuration, shakeIntensity)
+  }
+
+  /**
+   * 显示 buff 光环效果
+   */
+  private showBuffAuraEffect() {
+    const attackEffects = this.skillActionsConfig.attackEffects?.[this.playerRoleId]?.buff_aura
+    const colorHex = attackEffects?.color || '#81c784'
+    const radius = attackEffects?.radius || 60
+    const pulseCount = attackEffects?.pulseCount || 3
+
+    const circle = this.add.circle(150, 280, radius, parseInt(colorHex.replace('#', ''), 16), 0.3)
+    circle.setDepth(45)
+
+    for (let i = 0; i < pulseCount; i++) {
+      const ring = this.add.circle(150, 280, radius + i * 20, parseInt(colorHex.replace('#', ''), 16), 0.2)
+      ring.setDepth(44)
+      this.tweens.add({
+        targets: ring,
+        radius: radius + i * 20 + 40,
+        alpha: 0,
+        duration: 600,
+        delay: i * 200,
+        ease: 'Sine.easeOut',
+        onComplete: () => ring.destroy()
+      })
+    }
+
+    this.tweens.add({
+      targets: circle,
+      alpha: 0,
+      duration: 800,
+      ease: 'Sine.easeOut',
+      onComplete: () => circle.destroy()
+    })
+  }
+
+  /**
+   * 显示斩击特效
+   */
+  private showSlashEffect(x: number, y: number) {
+    const slash = this.add.line(x, y, 0, 0, 100, -30, 0xFFA500)
+    slash.setLineWidth(4)
+    slash.setDepth(50)
+    slash.setRotation(Math.PI / 4)
+
+    this.tweens.add({
+      targets: slash,
+      scaleX: 1.5,
+      alpha: 0,
+      duration: 200,
+      ease: 'Sine.easeOut',
+      onComplete: () => slash.destroy()
+    })
   }
 
   /**
@@ -1170,11 +1485,4 @@ export class CombatOverlayScene extends Phaser.Scene {
     ).length
   }
 
-  private showVictoryText(text: string, color: string) {
-    this.add.text(640, 360, text, {
-      fontFamily: 'Arial',
-      fontSize: '48px',
-      color: color
-    }).setOrigin(0.5)
   }
-}

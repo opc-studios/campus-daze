@@ -1,0 +1,276 @@
+{
+  "id": "world_map",
+  "name": "同济四平路校区完整地图",
+  "description": "同济四平路校区完整地图，作为世界地图展示主图，承载多区块传送、学院节点、校史记忆和章节路线规划",
+  "image": "assets/maps/tongji-siping-core-overworld-v4.png",
+  "width": 2048,
+  "height": 1024,
+  "cameraBounds": {
+    "width": 2048,
+    "height": 1024
+  },
+  "zones": [
+    {
+      "id": "entrance",
+      "name": "校门广场",
+      "x": 50,
+      "y": 450,
+      "w": 200,
+      "h": 150,
+      "color": "#FFB7C5",
+      "chapter": 0
+    },
+    {
+      "id": "zhonghe",
+      "name": "衷和广场",
+      "x": 250,
+      "y": 350,
+      "w": 250,
+      "h": 200,
+      "color": "#FFD1DC",
+      "chapter": 1
+    },
+    {
+      "id": "library",
+      "name": "图书馆",
+      "x": 550,
+      "y": 250,
+      "w": 200,
+      "h": 180,
+      "color": "#98FB98",
+      "chapter": 1
+    },
+    {
+      "id": "ai_building",
+      "name": "AI 学院",
+      "x": 800,
+      "y": 300,
+      "w": 220,
+      "h": 180,
+      "color": "#87CEEB",
+      "chapter": 1
+    },
+    {
+      "id": "cherry_blossom",
+      "name": "樱花大道",
+      "x": 500,
+      "y": 480,
+      "w": 350,
+      "h": 150,
+      "color": "#FFB6C1",
+      "chapter": 2
+    },
+    {
+      "id": "canteen",
+      "name": "食堂",
+      "x": 900,
+      "y": 500,
+      "w": 180,
+      "h": 140,
+      "color": "#FFD700",
+      "chapter": 2
+    },
+    {
+      "id": "lab_district",
+      "name": "实验区",
+      "x": 1150,
+      "y": 350,
+      "w": 250,
+      "h": 200,
+      "color": "#E6E6FA",
+      "chapter": 3
+    },
+    {
+      "id": "museum",
+      "name": "校史馆",
+      "x": 1450,
+      "y": 400,
+      "w": 180,
+      "h": 160,
+      "color": "#F5DEB3",
+      "chapter": 3
+    },
+    {
+      "id": "anniversary",
+      "name": "校庆广场",
+      "x": 1700,
+      "y": 300,
+      "w": 280,
+      "h": 250,
+      "color": "#FF6B6B",
+      "chapter": 4
+    },
+    {
+      "id": "sports_center",
+      "name": "体育中心",
+      "x": 300,
+      "y": 600,
+      "w": 200,
+      "h": 150,
+      "color": "#ADD8E6",
+      "chapter": 2
+    },
+    {
+      "id": "dormitory",
+      "name": "学生宿舍",
+      "x": 1100,
+      "y": 600,
+      "w": 200,
+      "h": 150,
+      "color": "#90EE90",
+      "chapter": 2
+    },
+    {
+      "id": "administration",
+      "name": "行政楼",
+      "x": 600,
+      "y": 600,
+      "w": 150,
+      "h": 120,
+      "color": "#DDA0DD",
+      "chapter": 3
+    }
+  ],
+  "teleportPoints": [
+    {
+      "id": "tp_ch1_start",
+      "name": "AI课程入口",
+      "x": 880,
+      "y": 380,
+      "targetChapter": 1,
+      "targetNode": "S-1"
+    },
+    {
+      "id": "tp_ch2_start",
+      "name": "樱花大道入口",
+      "x": 675,
+      "y": 540,
+      "targetChapter": 2,
+      "targetNode": "S-2"
+    },
+    {
+      "id": "tp_ch3_start",
+      "name": "校史馆入口",
+      "x": 1540,
+      "y": 470,
+      "targetChapter": 3,
+      "targetNode": "S-3"
+    },
+    {
+      "id": "tp_ch4_start",
+      "name": "校庆广场入口",
+      "x": 1840,
+      "y": 420,
+      "targetChapter": 4,
+      "targetNode": "S-4"
+    },
+    {
+      "id": "tp_library",
+      "name": "图书馆",
+      "x": 640,
+      "y": 320,
+      "targetChapter": 1,
+      "targetNode": "C-1"
+    },
+    {
+      "id": "tp_canteen",
+      "name": "食堂",
+      "x": 980,
+      "y": 560,
+      "targetChapter": 2,
+      "targetNode": "P-3"
+    }
+  ],
+  "memoryPoints": [
+    {
+      "id": "mem_1907",
+      "name": "1907年建校",
+      "x": 1750,
+      "y": 350,
+      "archiveId": "archive_1907",
+      "description": "同济医学堂在上海创立"
+    },
+    {
+      "id": "mem_1923",
+      "name": "1923年定名",
+      "x": 1780,
+      "y": 380,
+      "archiveId": "archive_1923",
+      "description": "正式定名为同济大学"
+    },
+    {
+      "id": "mem_1927",
+      "name": "1927年国立",
+      "x": 1810,
+      "y": 350,
+      "archiveId": "archive_1927",
+      "description": "成为国立大学"
+    },
+    {
+      "id": "mem_1940",
+      "name": "1940年李庄",
+      "x": 1840,
+      "y": 380,
+      "archiveId": "archive_1940",
+      "description": "迁至四川李庄办学"
+    },
+    {
+      "id": "mem_1979",
+      "name": "1979年交流",
+      "x": 1870,
+      "y": 350,
+      "archiveId": "archive_1979",
+      "description": "恢复对德交流"
+    },
+    {
+      "id": "mem_2000",
+      "name": "2000年合并",
+      "x": 1900,
+      "y": 380,
+      "archiveId": "archive_2000",
+      "description": "与上海铁道大学合并"
+    },
+    {
+      "id": "mem_2017",
+      "name": "2017年双一流",
+      "x": 1930,
+      "y": 350,
+      "archiveId": "archive_2017",
+      "description": "入选双一流建设高校"
+    },
+    {
+      "id": "mem_2022",
+      "name": "2022年续建",
+      "x": 1960,
+      "y": 380,
+      "archiveId": "archive_2022",
+      "description": "继续双一流建设"
+    }
+  ],
+  "collections": [
+    {
+      "id": "coll_campus_map",
+      "name": "校园地图",
+      "description": "完整的同济四平路校区地图",
+      "category": "archive",
+      "rarity": "rare",
+      "position": { "x": 1000, "y": 500 }
+    },
+    {
+      "id": "coll_cherry_blossom",
+      "name": "樱花标本",
+      "description": "同济樱花大道的樱花标本",
+      "category": "collection",
+      "rarity": "uncommon",
+      "position": { "x": 675, "y": 540 }
+    },
+    {
+      "id": "coll_historical_stone",
+      "name": "校史石碑",
+      "description": "记录百年校史的石碑",
+      "category": "key",
+      "rarity": "legendary",
+      "position": { "x": 1540, "y": 470 }
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "actionSequences": {
+    "lina": {
+      "idle": {
+        "frames": [0, 1, 2, 3],
+        "fps": 7,
+        "repeat": -1,
+        "type": "loop"
+      },
+      "attack_basic": {
+        "frames": [0, 1, 2, 3],
+        "fps": 18,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle"
+      },
+      "attack_skill1": {
+        "frames": [0, 1, 2, 3],
+        "fps": 16,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle",
+        "effect": "projectile"
+      },
+      "summon": {
+        "frames": [0, 1, 2, 3, 4, 5, 6, 7],
+        "fps": 20,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle",
+        "effect": "summon"
+      },
+      "hit": {
+        "frames": [0, 1, 2, 3],
+        "fps": 11,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle"
+      },
+      "death": {
+        "frames": [0, 1, 2, 3, 4, 5],
+        "fps": 9,
+        "repeat": 0,
+        "type": "once",
+        "followUp": null
+      },
+      "transform": {
+        "frames": [0, 1, 2, 3, 4, 5, 6, 7],
+        "fps": 20,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle"
+      }
+    },
+    "ayu": {
+      "idle": {
+        "frames": [0, 1, 2, 3],
+        "fps": 7,
+        "repeat": -1,
+        "type": "loop"
+      },
+      "attack_basic": {
+        "frames": [0, 1, 2, 3],
+        "fps": 18,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle",
+        "sequence": [
+          { "frame": 0, "delay": 0, "effect": null },
+          { "frame": 1, "delay": 50, "effect": "hit_check" },
+          { "frame": 2, "delay": 100, "effect": null },
+          { "frame": 3, "delay": 50, "effect": "hit_check" }
+        ]
+      },
+      "attack_combo": {
+        "frames": [0, 1, 2, 3, 4, 5],
+        "fps": 22,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle",
+        "sequence": [
+          { "frame": 0, "delay": 0, "effect": null },
+          { "frame": 1, "delay": 40, "effect": "hit_check" },
+          { "frame": 2, "delay": 60, "effect": "hit_check" },
+          { "frame": 3, "delay": 40, "effect": "hit_check" },
+          { "frame": 4, "delay": 60, "effect": "knockback" },
+          { "frame": 5, "delay": 80, "effect": null }
+        ]
+      },
+      "buff_charge": {
+        "frames": [0, 1, 2, 3, 4, 5],
+        "fps": 15,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle",
+        "effect": "buff_aura"
+      },
+      "hit": {
+        "frames": [0, 1, 2, 3],
+        "fps": 12,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle",
+        "recoil": 15
+      },
+      "death": {
+        "frames": [0, 1, 2, 3, 4, 5],
+        "fps": 8,
+        "repeat": 0,
+        "type": "once",
+        "followUp": null
+      },
+      "transform": {
+        "frames": [0, 1, 2, 3, 4, 5, 6, 7],
+        "fps": 20,
+        "repeat": 0,
+        "type": "once",
+        "followUp": "idle"
+      }
+    }
+  },
+  "skillActionMap": {
+    "lina_basic": { "roleId": "lina", "action": "attack_basic" },
+    "lina_s1": { "roleId": "lina", "action": "attack_skill1" },
+    "lina_s2": { "roleId": "lina", "action": "summon" },
+    "lina_s3": { "roleId": "lina", "action": "attack_skill1" },
+    "lina_s4": { "roleId": "lina", "action": "attack_skill1" },
+    "lina_s5": { "roleId": "lina", "action": "attack_skill1" },
+    "ayu_basic": { "roleId": "ayu", "action": "attack_basic" },
+    "ayu_s1": { "roleId": "ayu", "action": "attack_basic" },
+    "ayu_s2": { "roleId": "ayu", "action": "buff_charge" },
+    "ayu_s3": { "roleId": "ayu", "action": "attack_combo" },
+    "ayu_s4": { "roleId": "ayu", "action": "attack_combo" },
+    "ayu_s5": { "roleId": "ayu", "action": "buff_charge" }
+  },
+  "attackEffects": {
+    "lina": {
+      "projectile": {
+        "speed": 400,
+        "size": 12,
+        "color": "#d98ad7",
+        "trail": true,
+        "trailLength": 7,
+        "impactEffect": "sparkle"
+      },
+      "summon": {
+        "particleCount": 20,
+        "color": "#9b59b6",
+        "duration": 1000,
+        "spread": 360
+      }
+    },
+    "ayu": {
+      "hit_check": {
+        "range": 120,
+        "damage": "normal",
+        "particle": "slash"
+      },
+      "knockback": {
+        "force": 50,
+        "duration": 300
+      },
+      "buff_aura": {
+        "color": "#81c784",
+        "radius": 60,
+        "pulseCount": 3
+      }
+    }
+  },
+  "collisionResponses": {
+    "hit": {
+      "recoilX": 10,
+      "recoilY": 5,
+      "shakeIntensity": 0.01,
+      "shakeDuration": 150,
+      "flashColor": "#ff0000",
+      "flashDuration": 100
+    },
+    "knockback": {
+      "forceX": 30,
+      "forceY": 10,
+      "duration": 400,
+      "ease": "Bounce"
+    },
+    "block": {
+      "recoilX": -5,
+      "shieldFlash": "#4ECDC4",
+      "particleEffect": "deflect"
+    }
+  },
+  "animationTransitions": {
+    "attack_to_idle": {
+      "blendFrames": 2,
+      "duration": 100
+    },
+    "hit_to_idle": {
+      "blendFrames": 1,
+      "duration": 50
+    },
+    "summon_to_idle": {
+      "blendFrames": 3,
+      "duration": 150
+    }
+  }
+}
