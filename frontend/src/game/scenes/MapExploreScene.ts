@@ -4,6 +4,8 @@ import { MonsterAISystem } from '../systems/MonsterAISystem'
 
 const COLS = 8
 const ROWS = 8
+const FRAME_SIZE = 147
+const BASELINE = 140
 const ANIMATION_SPEED_FACTOR = 0.68
 
 interface ActionDef {
@@ -60,7 +62,10 @@ export class MapExploreScene extends Phaser.Scene {
   private equipmentList: EquipmentDef[] = []
   private formText!: Phaser.GameObjects.Text
   private jKey!: Phaser.Input.Keyboard.Key
+  private kKey!: Phaser.Input.Keyboard.Key
   private lKey!: Phaser.Input.Keyboard.Key
+  private iKey!: Phaser.Input.Keyboard.Key
+  private oKey!: Phaser.Input.Keyboard.Key
   private attackCooldown = 0
   // 步骤 1 v2 新增字段
   private staffSprite!: Phaser.GameObjects.Image
@@ -261,6 +266,7 @@ export class MapExploreScene extends Phaser.Scene {
 
     if (this.textures.exists(this.preferredSpriteKey)) {
       this.player = this.physics.add.sprite(startPos.x, startPos.y, this.preferredSpriteKey, 0)
+        .setOrigin(0.5, BASELINE / FRAME_SIZE)
       // P1: 80×80 替代 120×120，对齐 Phaser 官方 topdown RPG 角色尺寸
       this.player.setDisplaySize(80, 80)
       // body size 34×42、offset (56, 92)，参考 app.js showCharacter
@@ -406,9 +412,15 @@ export class MapExploreScene extends Phaser.Scene {
 
     if (this.input.keyboard) {
       this.jKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J)
+      this.kKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K)
       this.lKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.L)
+      this.iKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I)
+      this.oKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O)
       this.jKey.on('down', () => this.castProjectile())
+      this.kKey.on('down', () => this.playHitAnimation())
       this.lKey.on('down', () => this.transformForm())
+      this.iKey.on('down', () => this.prevEquipment())
+      this.oKey.on('down', () => this.nextEquipment())
       // 步骤 1 v2：C 键碰撞区 toggle + R 键镜头归位
       this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C).on('down', () => {
         this.collisionGraphicsList.forEach(g => g.setVisible(!g.visible))
@@ -1040,8 +1052,12 @@ export class MapExploreScene extends Phaser.Scene {
     }
   }
 
+  private getAnimationFrames(action: ActionDef): number[] {
+    return action.frames.map(column => action.row * COLS + column)
+  }
+
   /**
-   * 步骤 2：8 动作帧动画创建（8×8 网格切分，参考 app.js prepareSheetFrames）
+   * 步骤 2：8 动作帧动画创建（8×8 网格切分，参考 app.js ensureLinaAnimations）
    * 仅 lina/ayu 有 v10 精灵图，其他角色保留 fallback（无动画）
    */
   private preparePlayerAnimations(roleId: string, spriteKey: string) {
@@ -1063,23 +1079,14 @@ export class MapExploreScene extends Phaser.Scene {
         const animKey = `${action.id}_${roleId}`
         if (this.anims.exists(animKey)) return
 
-        const y0 = action.row * frameHeight
-        for (let col = 0; col < COLS; col++) {
-          const frameName = `${roleId}_map_${action.id}-${col}`
-          const x0 = col * frameWidth
-          if (!texture.has(frameName)) {
-            texture.add(frameName, 0, x0, y0, frameWidth, frameHeight)
-          }
-        }
-
-        const frames = action.frames.map((colIdx: number) => ({
+        const frames = this.getAnimationFrames(action).map(frame => ({
           key: spriteKey,
-          frame: `${roleId}_map_${action.id}-${colIdx}`
+          frame
         }))
         this.anims.create({
           key: animKey,
           frames,
-          frameRate: Math.max(1, Math.floor(action.fps * ANIMATION_SPEED_FACTOR)),
+          frameRate: Math.max(1, action.fps * ANIMATION_SPEED_FACTOR),
           repeat: action.repeat
         })
       })
@@ -1205,16 +1212,17 @@ export class MapExploreScene extends Phaser.Scene {
     }
     this.activeProjectiles.push(projData)
 
-    // 弹道 tween + impact 爆炸
+    // 弹道 tween + impact 爆炸（参考目标网页 castProjectile）
+    const duration = Math.floor(equip.range / equip.speed * 1000 * 1.5)
     this.tweens.add({
       targets: projectile,
-      x: startX + direction * equip.range * 0.3,
-      duration: 600,
+      x: startX + direction * equip.range,
+      duration,
       ease: 'Power1',
       onComplete: () => {
         // impact 爆炸：8 粒子散射
         const impact = this.add.sprite(projectile.x, projectile.y, 'lina_projectiles', equip.impactFrame)
-        impact.setDisplaySize(60, 60)
+        impact.setDisplaySize(equip.size * 4, equip.size * 4)
         impact.setDepth(16)
         this.tweens.add({
           targets: impact,
@@ -1230,8 +1238,8 @@ export class MapExploreScene extends Phaser.Scene {
           particle.setDepth(16)
           this.tweens.add({
             targets: particle,
-            x: projectile.x + Math.cos(angle) * 40,
-            y: projectile.y + Math.sin(angle) * 40,
+            x: projectile.x + Math.cos(angle) * equip.size * 3,
+            y: projectile.y + Math.sin(angle) * equip.size * 3,
             alpha: 0,
             duration: 400,
             onComplete: () => particle.destroy()
@@ -1246,6 +1254,32 @@ export class MapExploreScene extends Phaser.Scene {
     })
 
     this.attackCooldown = equip.cooldown || 400
+  }
+
+  private playHitAnimation() {
+    if (this.isActionLocked) return
+    if (!this.anims.exists(`hit_${this.playerRoleId}`)) return
+    this.isActionLocked = true
+    this.player.play(`hit_${this.playerRoleId}`)
+    this.player.once('animationcomplete', () => {
+      this.isActionLocked = false
+      const idleKey = this.currentForm === 'cat'
+        ? `catRun_${this.playerRoleId}`
+        : `idle_${this.playerRoleId}`
+      if (this.anims.exists(idleKey)) this.player.play(idleKey, true)
+    })
+  }
+
+  private prevEquipment() {
+    if (this.equipmentList.length === 0) return
+    this.currentEquipIndex = (this.currentEquipIndex - 1 + this.equipmentList.length) % this.equipmentList.length
+    this.applyEquipment()
+  }
+
+  private nextEquipment() {
+    if (this.equipmentList.length === 0) return
+    this.currentEquipIndex = (this.currentEquipIndex + 1) % this.equipmentList.length
+    this.applyEquipment()
   }
 
   /**
