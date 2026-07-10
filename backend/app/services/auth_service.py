@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.models.user import User
 from app.utils.security import hash_password, verify_password, create_access_token, create_refresh_token
@@ -6,15 +6,15 @@ from app.utils.errors import AuthInvalidCredentials, AuthUsernameExists
 from app.schemas.auth import UserResponse
 
 
-async def register(db: AsyncSession, username: str, password: str, nickname: str, email: str = None) -> dict:
-    result = await db.execute(select(User).where(User.username == username))
+def register(db: Session, username: str, password: str, nickname: str, email: str = None) -> dict:
+    result = db.execute(select(User).where(User.username == username))
     existing_user = result.scalar_one_or_none()
 
     if existing_user:
         raise AuthUsernameExists()
 
     if email:
-        result = await db.execute(select(User).where(User.email == email))
+        result = db.execute(select(User).where(User.email == email))
         if result.scalar_one_or_none():
             raise AuthUsernameExists()
 
@@ -27,8 +27,8 @@ async def register(db: AsyncSession, username: str, password: str, nickname: str
     )
 
     db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
+    db.commit()
+    db.refresh(new_user)
 
     access_token = create_access_token(data={"sub": str(new_user.id)})
     refresh_token = create_refresh_token(data={"sub": str(new_user.id)})
@@ -41,8 +41,8 @@ async def register(db: AsyncSession, username: str, password: str, nickname: str
     }
 
 
-async def login(db: AsyncSession, username: str, password: str) -> dict:
-    result = await db.execute(select(User).where(User.username == username))
+def login(db: Session, username: str, password: str) -> dict:
+    result = db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(password, user.password_hash):
@@ -62,8 +62,8 @@ async def login(db: AsyncSession, username: str, password: str) -> dict:
     }
 
 
-async def refresh_token(db: AsyncSession, user_id: str) -> dict:
-    result = await db.execute(select(User).where(User.id == int(user_id)))
+def refresh_token(db: Session, user_id: str) -> dict:
+    result = db.execute(select(User).where(User.id == int(user_id)))
     user = result.scalar_one_or_none()
 
     if not user or not user.is_active:

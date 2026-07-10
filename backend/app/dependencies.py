@@ -1,6 +1,6 @@
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User
@@ -13,7 +13,7 @@ security = HTTPBearer()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> User:
     token = credentials.credentials
     payload = decode_token(token)
@@ -25,7 +25,7 @@ async def get_current_user(
     if user_id is None:
         raise AuthInvalidToken()
 
-    result = await db.execute(select(User).where(User.id == int(user_id)))
+    result = db.execute(select(User).where(User.id == int(user_id)))
     user = result.scalar_one_or_none()
 
     if user is None or not user.is_active:

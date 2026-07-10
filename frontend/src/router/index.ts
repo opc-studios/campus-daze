@@ -59,6 +59,11 @@ const router = createRouter({
       name: 'ending',
       component: () => import('../views/EndingView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/sprite-viewer',
+      name: 'sprite-viewer',
+      component: () => import('../components/SpriteFrameViewer.vue')
     }
   ]
 })

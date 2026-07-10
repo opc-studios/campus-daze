@@ -83,6 +83,10 @@ export class MapExploreScene extends Phaser.Scene {
   private readonly DUST_INTERVAL_MS = 200
   // C.3 移动端虚拟摇杆方向向量（-1~1, -1~1），null 表示摇杆未激活
   private joystickDir: { x: number; y: number } | null = null
+  // 优化：缓存 gameStore 引用避免每帧调用 useGameStore()
+  private gameStore!: ReturnType<typeof import('../../stores/game').useGameStore>
+  // 优化：使用 ParticleEmitter 替代每次创建 circle+tween
+  private dustEmitter!: Phaser.GameObjects.Particles.ParticleEmitter
 
   constructor() {
     super({ key: 'MapExploreScene' })
@@ -109,7 +113,8 @@ export class MapExploreScene extends Phaser.Scene {
   }
 
   create() {
-    const gameStore = useGameStore()
+    this.gameStore = useGameStore()
+    const gameStore = this.gameStore
     const mapNodesConfig = this.cache.json.get('mapNodes') || []
     const puzzlesConfig = this.cache.json.get('puzzles') || []
     const monstersConfig = this.cache.json.get('monsters') || []
@@ -141,8 +146,11 @@ export class MapExploreScene extends Phaser.Scene {
     const mapHeight = zhongheMap?.pixelHeight || 720
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight)
 
-    // P1: 相机缩放 —— 像素艺术质感（对齐 Phaser 官方 topdown RPG 示例）
-    this.cameras.main.setZoom(1.5)
+    // 相机背景色：使用深绿色调，与校园广场主题匹配
+    this.cameras.main.setBackgroundColor('#2a4a2a')
+
+    // 相机缩放：分层地图 10000×6000 使用 0.55，fallback 旧地图使用 1.0
+    this.cameras.main.setZoom(zhongheMap ? 0.55 : 1.0)
 
     // P0: 物理 world bounds —— 替代手动 Clamp，避免与 arcade body 冲突
     if (zhongheMap) {
@@ -153,12 +161,28 @@ export class MapExploreScene extends Phaser.Scene {
 
     // 真实分层地图底图（12 块拼接）；fallback 单色背景
     if (zhongheMap?.chunks && Array.isArray(zhongheMap.chunks)) {
+      let loadedChunks = 0
+      const totalChunks = zhongheMap.chunks.length
+      console.log(`[MapExploreScene] Loading ${totalChunks} map chunks...`)
+      
       zhongheMap.chunks.forEach((chunk: any) => {
         if (this.textures.exists(chunk.key)) {
           // 每块 2500×2000，中心点偏移 1250×1000
-          this.add.image(chunk.x + 1250, chunk.y + 1000, chunk.key)
+          const image = this.add.image(chunk.x + 1250, chunk.y + 1000, chunk.key)
+          image.setDepth(0)
+          loadedChunks++
+          console.log(`[MapExploreScene] Loaded chunk: ${chunk.key} at (${chunk.x}, ${chunk.y})`)
+        } else {
+          console.warn(`[MapExploreScene] Texture not found for chunk: ${chunk.key}`)
         }
       })
+      
+      console.log(`[MapExploreScene] Successfully loaded ${loadedChunks}/${totalChunks} map chunks`)
+      
+      if (loadedChunks === 0) {
+        console.error(`[MapExploreScene] No map chunks loaded, falling back to solid background`)
+        this.add.rectangle(mapWidth / 2, mapHeight / 2, mapWidth, mapHeight, style.bg)
+      }
     } else {
       this.add.rectangle(mapWidth / 2, mapHeight / 2, mapWidth, mapHeight, style.bg)
     }
@@ -243,8 +267,8 @@ export class MapExploreScene extends Phaser.Scene {
     // 步骤 2：绘制 23 障碍物碰撞区（仅分层地图激活时）
     if (zhongheMap) {
       this.drawObstacles()
-      this.projectilesGroup = this.add.group()
     }
+    this.projectilesGroup = this.add.group()
 
     // spawn 点：分层地图用当前章节 start 节点位置（已缩放），fallback 旧 (100, 300)
     const startNode = this.mapNodes.find((n: any) => n.type === 'start')
@@ -261,13 +285,13 @@ export class MapExploreScene extends Phaser.Scene {
 
     if (this.textures.exists(this.preferredSpriteKey)) {
       this.player = this.physics.add.sprite(startPos.x, startPos.y, this.preferredSpriteKey, 0)
-      // P1: 80×80 替代 120×120，对齐 Phaser 官方 topdown RPG 角色尺寸
-      this.player.setDisplaySize(80, 80)
-      // body size 34×42、offset (56, 92)，参考 app.js showCharacter
+      // 角色显示尺寸：200×200，确保在相机缩放下清晰可见
+      this.player.setDisplaySize(200, 200)
+      // body size 85×105、offset (140, 230)，按比例放大
       const body = this.player.body as Phaser.Physics.Arcade.Body
       if (body) {
-        body.setSize(34, 42)
-        body.setOffset(56, 92)
+        body.setSize(85, 105)
+        body.setOffset(140, 230)
         // P0: setCollideWorldBounds 配合 physics.world.setBounds，替代手动 Clamp
         body.setCollideWorldBounds(true)
       }
@@ -301,18 +325,21 @@ export class MapExploreScene extends Phaser.Scene {
     // P1: 玩家脚下 soft shadow —— 对齐 Phaser 官方 topdown RPG 示例
     this.playerShadow = this.add.ellipse(
       this.player.x,
-      this.player.y + 24,
-      56,
-      14,
+      this.player.y + 60,
+      140,
+      35,
       0x000000,
       0.35
     )
     // 阴影深度比玩家低 0.5，确保始终被玩家遮挡
     this.playerShadow.setDepth(this.player.y - 0.5)
 
-    // 步骤 2：默认猫形态，播放 idle/catRun
+    // 步骤 2：默认猫形态，播放 idle 动画
     this.currentForm = 'cat'
-    if (this.anims.exists(`catRun_${this.playerRoleId}`)) {
+    const idleAnimKey = `idle_${this.playerRoleId}`
+    if (this.anims.exists(idleAnimKey)) {
+      this.player.play(idleAnimKey, true)
+    } else if (this.anims.exists(`catRun_${this.playerRoleId}`)) {
       this.player.play(`catRun_${this.playerRoleId}`, true)
     } else if (this.anims.exists(`walk_${this.preferredSpriteKey}`)) {
       this.player.play(`walk_${this.preferredSpriteKey}`, true)
@@ -440,6 +467,18 @@ export class MapExploreScene extends Phaser.Scene {
       this.joystickDir = null
       const body = this.player.body as Phaser.Physics.Arcade.Body
       if (body) body.setVelocity(0, 0)
+    })
+
+    // 优化：预创建尘埃粒子发射器，避免每帧分配
+    this.dustEmitter = this.add.particles(0, 0, 'particle', {
+      scale: { start: 0.8, end: 0.2 },
+      alpha: { start: 0.5, end: 0 },
+      lifespan: 400,
+      speed: { min: 20, max: 60 },
+      angle: { min: 180, max: 360 },
+      quantity: 1,
+      visible: false,
+      blendMode: 'NORMAL'
     })
 
     // V 序章独立引导：currentChapter===0 时显示教学提示（GDD §3.1 序章）
@@ -643,19 +682,10 @@ export class MapExploreScene extends Phaser.Scene {
         this.player.setFlipX(dx < 0)
       }
     } else if (!isMoving && this.player.anims) {
-      if (this.currentForm === 'cat' && this.preferredSpriteKey) {
-        const catIdleAnimKey = `catRun_${this.playerRoleId}`
-        if (this.anims.exists(catIdleAnimKey)) {
-          this.player.play(catIdleAnimKey, true)
-        } else if (this.anims.exists(idleAnimKey)) {
-          this.player.play(idleAnimKey, true)
-        }
-      } else {
-        if (this.anims.exists(idleAnimKey) && this.player.anims.currentAnim?.key !== idleAnimKey) {
-          this.player.play(idleAnimKey, true)
-        } else if (!this.anims.exists(idleAnimKey) && this.player.anims.isPlaying) {
-          this.player.anims.pause()
-        }
+      if (this.anims.exists(idleAnimKey) && this.player.anims.currentAnim?.key !== idleAnimKey) {
+        this.player.play(idleAnimKey, true)
+      } else if (!this.anims.exists(idleAnimKey) && this.player.anims.isPlaying) {
+        this.player.anims.pause()
       }
     }
 
@@ -668,12 +698,14 @@ export class MapExploreScene extends Phaser.Scene {
     // P1: 玩家 Y-sort 深度 + 阴影跟随
     this.updatePlayerDepthAndShadow()
 
-    // P2: 移动尘埃粒子
+    // P2: 移动尘埃粒子 - 使用预创建的 ParticleEmitter
     if (isMoving) {
       this.dustTimer += deltaMs
       if (this.dustTimer >= this.DUST_INTERVAL_MS) {
         this.dustTimer = 0
-        this.spawnDustParticle(this.player.x, this.player.y + 20)
+        this.dustEmitter.setPosition(this.player.x, this.player.y + 20)
+        this.dustEmitter.setDepth(this.player.y - 0.3)
+        this.dustEmitter.emitParticle(1)
       }
     } else {
       this.dustTimer = 0
@@ -684,12 +716,14 @@ export class MapExploreScene extends Phaser.Scene {
       this.attackCooldown = Math.max(0, this.attackCooldown - deltaMs)
     }
 
-    const gameStore = useGameStore()
     // F6: store 写入节流，每 200ms 写一次，避免每帧触发响应式
+    // 优化：使用缓存的 gameStore 引用
     this.lastSaveTime += deltaMs
-    if (this.lastSaveTime >= this.SAVE_INTERVAL_MS && gameStore.state) {
+    if (this.lastSaveTime >= this.SAVE_INTERVAL_MS && this.gameStore.state) {
       this.lastSaveTime = 0
-      gameStore.state.map.playerPosition = { x: this.player.x, y: this.player.y }
+      // 优化：原地修改字段而非创建新对象，减少响应式开销
+      this.gameStore.state.map.playerPosition.x = this.player.x
+      this.gameStore.state.map.playerPosition.y = this.player.y
     }
 
     if (this.monsterAI) {
@@ -697,9 +731,9 @@ export class MapExploreScene extends Phaser.Scene {
       this.monsterAI.update(deltaMs / 1000)
     }
 
-    if (this.creditsText && gameStore.progress) {
+    if (this.creditsText && this.gameStore.progress) {
       this.creditsText.setText(
-        `累计学分: ${gameStore.resources?.credits || 0}  章节学分: ${gameStore.progress?.chapterCredits || 0}`
+        `累计学分: ${this.gameStore.resources?.credits || 0}  章节学分: ${this.gameStore.progress?.chapterCredits || 0}`
       )
     }
 
@@ -776,26 +810,9 @@ export class MapExploreScene extends Phaser.Scene {
     if (!this.player) return
     this.player.setDepth(this.player.y)
     if (this.playerShadow) {
-      this.playerShadow.setPosition(this.player.x, this.player.y + 24)
+      this.playerShadow.setPosition(this.player.x, this.player.y + 60)
       this.playerShadow.setDepth(this.player.y - 0.5)
     }
-  }
-
-  /**
-   * P2: 移动尘埃粒子 —— 对齐 Phaser 官方示例的 movement feedback
-   * 创建一个小白圆，缩放+淡出 400ms 销毁
-   */
-  private spawnDustParticle(x: number, y: number) {
-    const dust = this.add.circle(x, y, 5, 0xffffff, 0.5)
-    dust.setDepth(this.player.y - 0.3)
-    this.tweens.add({
-      targets: dust,
-      scale: 0.3,
-      alpha: 0,
-      duration: 400,
-      ease: 'Sine.easeOut',
-      onComplete: () => dust.destroy()
-    })
   }
 
   /** 步骤 1 v2：计算 8 方向朝向 */
@@ -1051,37 +1068,82 @@ export class MapExploreScene extends Phaser.Scene {
     }
     try {
       const texture = this.textures.get(spriteKey)
+      if (!texture) {
+        console.warn(`[MapExploreScene] Texture not found: ${spriteKey}`)
+        this.createLegacyWalkAnimation(spriteKey)
+        return
+      }
+
       const source = texture.getSourceImage() as HTMLImageElement
+      if (!source) {
+        console.warn(`[MapExploreScene] No source image for texture: ${spriteKey}`)
+        this.createLegacyWalkAnimation(spriteKey)
+        return
+      }
+
       const frameWidth = Math.floor(source.width / COLS)
       const frameHeight = Math.floor(source.height / ROWS)
+      
+      console.log(`[MapExploreScene] Preparing animations for ${roleId}: spriteKey=${spriteKey}, sourceSize=${source.width}x${source.height}, frameSize=${frameWidth}x${frameHeight}`)
+
       if (frameWidth < 8 || frameHeight < 8) {
+        console.warn(`[MapExploreScene] Frame size too small: ${frameWidth}x${frameHeight}, falling back to legacy animation`)
         this.createLegacyWalkAnimation(spriteKey)
         return
       }
 
       this.actionsList.forEach((action: ActionDef) => {
         const animKey = `${action.id}_${roleId}`
-        if (this.anims.exists(animKey)) return
+        if (this.anims.exists(animKey)) {
+          console.log(`[MapExploreScene] Animation already exists: ${animKey}`)
+          return
+        }
 
         const y0 = action.row * frameHeight
+        if (y0 + frameHeight > source.height) {
+          console.warn(`[MapExploreScene] Action ${action.id} row ${action.row} exceeds image bounds (y0=${y0}, height=${source.height})`)
+          return
+        }
+
         for (let col = 0; col < COLS; col++) {
           const frameName = `${roleId}_map_${action.id}-${col}`
           const x0 = col * frameWidth
+          if (x0 + frameWidth > source.width) {
+            console.warn(`[MapExploreScene] Frame ${col} exceeds image bounds (x0=${x0}, width=${source.width})`)
+            continue
+          }
           if (!texture.has(frameName)) {
             texture.add(frameName, 0, x0, y0, frameWidth, frameHeight)
           }
         }
 
-        const frames = action.frames.map((colIdx: number) => ({
+        const validFrames = action.frames.filter((colIdx: number) => {
+          const isValid = colIdx >= 0 && colIdx < COLS && texture.has(`${roleId}_map_${action.id}-${colIdx}`)
+          if (!isValid) {
+            console.warn(`[MapExploreScene] Invalid frame index ${colIdx} for action ${action.id}`)
+          }
+          return isValid
+        })
+
+        if (validFrames.length === 0) {
+          console.warn(`[MapExploreScene] No valid frames for action ${action.id}`)
+          return
+        }
+
+        const frames = validFrames.map((colIdx: number) => ({
           key: spriteKey,
           frame: `${roleId}_map_${action.id}-${colIdx}`
         }))
+        
+        const frameRate = Math.max(1, Math.floor(action.fps * ANIMATION_SPEED_FACTOR))
         this.anims.create({
           key: animKey,
           frames,
-          frameRate: Math.max(1, Math.floor(action.fps * ANIMATION_SPEED_FACTOR)),
+          frameRate,
           repeat: action.repeat
         })
+        
+        console.log(`[MapExploreScene] Created animation: ${animKey}, frames=${frames.length}, fps=${frameRate}, repeat=${action.repeat}`)
       })
     } catch (e) {
       console.warn(`[MapExploreScene] Failed to create 8-action animations for ${roleId}:`, e)
@@ -1167,23 +1229,29 @@ export class MapExploreScene extends Phaser.Scene {
     if (this.attackCooldown > 0) return
     if (this.isActionLocked) return
     if (!this.projectilesGroup) return
-    if (!this.anims.exists(`attack_${this.playerRoleId}`)) return
 
-    // 步骤 1 v2：动作锁定，attack 动画期间禁止移动
-    this.isActionLocked = true
-    this.player.play(`attack_${this.playerRoleId}`)
-    this.player.once('animationcomplete', () => {
-      this.isActionLocked = false
-      const idleKey = this.currentForm === 'cat'
-        ? `catRun_${this.playerRoleId}`
-        : `idle_${this.playerRoleId}`
-      if (this.anims.exists(idleKey)) this.player.play(idleKey, true)
-    })
+    const hasAttackAnim = this.anims.exists(`attack_${this.playerRoleId}`)
+    if (hasAttackAnim) {
+      this.isActionLocked = true
+      this.player.play(`attack_${this.playerRoleId}`)
+      this.player.once('animationcomplete', () => {
+        this.isActionLocked = false
+        const idleKey = this.currentForm === 'cat'
+          ? `catRun_${this.playerRoleId}`
+          : `idle_${this.playerRoleId}`
+        if (this.anims.exists(idleKey)) this.player.play(idleKey, true)
+      })
+      this.time.delayedCall(1500, () => {
+        if (this.isActionLocked) {
+          this.isActionLocked = false
+        }
+      })
+    }
 
-    // 取当前装备作为弹射物来源（受 currentEquipIndex 控制）
     const equip = this.equipmentList[this.currentEquipIndex] || this.equipmentList[0]
     if (!equip || !this.textures.exists('lina_projectiles')) {
       this.attackCooldown = 400
+      if (this.isActionLocked) this.isActionLocked = false
       return
     }
     const direction = this.player.flipX ? -1 : 1

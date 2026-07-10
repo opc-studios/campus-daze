@@ -5,73 +5,73 @@
   "chunks": [
     {
       "key": "zhonghe-layered-map-r0-c0",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r0-c0.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r0-c0.png",
       "x": 0,
       "y": 0
     },
     {
       "key": "zhonghe-layered-map-r0-c1",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r0-c1.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r0-c1.png",
       "x": 2500,
       "y": 0
     },
     {
       "key": "zhonghe-layered-map-r0-c2",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r0-c2.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r0-c2.png",
       "x": 5000,
       "y": 0
     },
     {
       "key": "zhonghe-layered-map-r0-c3",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r0-c3.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r0-c3.png",
       "x": 7500,
       "y": 0
     },
     {
       "key": "zhonghe-layered-map-r1-c0",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r1-c0.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r1-c0.png",
       "x": 0,
       "y": 2000
     },
     {
       "key": "zhonghe-layered-map-r1-c1",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r1-c1.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r1-c1.png",
       "x": 2500,
       "y": 2000
     },
     {
       "key": "zhonghe-layered-map-r1-c2",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r1-c2.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r1-c2.png",
       "x": 5000,
       "y": 2000
     },
     {
       "key": "zhonghe-layered-map-r1-c3",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r1-c3.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r1-c3.png",
       "x": 7500,
       "y": 2000
     },
     {
       "key": "zhonghe-layered-map-r2-c0",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r2-c0.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r2-c0.png",
       "x": 0,
       "y": 4000
     },
     {
       "key": "zhonghe-layered-map-r2-c1",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r2-c1.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r2-c1.png",
       "x": 2500,
       "y": 4000
     },
     {
       "key": "zhonghe-layered-map-r2-c2",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r2-c2.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r2-c2.png",
       "x": 5000,
       "y": 4000
     },
     {
       "key": "zhonghe-layered-map-r2-c3",
-      "path": "assets/maps/playable/zhonghe-plaza-layered-chunks-v1/chunk-r2-c3.png",
+      "path": "assets/maps/zhonghe-plaza-layered-chunks/chunk-r2-c3.png",
       "x": 7500,
       "y": 4000
     }
