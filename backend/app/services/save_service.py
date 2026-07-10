@@ -1,12 +1,12 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.models.game_save import GameSave, RoleIdEnum
 from app.utils.errors import SaveNotFound, SaveVersionMismatch, SaveRoleLocked
 from app.services.progress_validator import ProgressValidator
 
 
-async def get_save(db: AsyncSession, user_id: int) -> dict:
-    result = await db.execute(
+def get_save(db: Session, user_id: int) -> dict:
+    result = db.execute(
         select(GameSave).where(GameSave.user_id == user_id)
     )
     save = result.scalar_one_or_none()
@@ -20,13 +20,13 @@ async def get_save(db: AsyncSession, user_id: int) -> dict:
     }
 
 
-async def put_save(
-    db: AsyncSession,
+def put_save(
+    db: Session,
     user_id: int,
     state: dict,
     state_version: int
 ) -> dict:
-    result = await db.execute(
+    result = db.execute(
         select(GameSave).where(GameSave.user_id == user_id)
     )
     save = result.scalar_one_or_none()
@@ -40,8 +40,8 @@ async def put_save(
             schema_version=1
         )
         db.add(new_save)
-        await db.commit()
-        await db.refresh(new_save)
+        db.commit()
+        db.refresh(new_save)
         return {"state_version": new_save.state_version}
 
     if save.state_version != state_version:
@@ -60,19 +60,19 @@ async def put_save(
 
     save.state_json = state
     save.state_version += 1
-    await db.commit()
-    await db.refresh(save)
+    db.commit()
+    db.refresh(save)
 
     return {"state_version": save.state_version}
 
 
-async def init_save(
-    db: AsyncSession,
+def init_save(
+    db: Session,
     user_id: int,
     role_id: str,
     initial_state: dict
 ) -> dict:
-    result = await db.execute(
+    result = db.execute(
         select(GameSave).where(GameSave.user_id == user_id)
     )
     existing = result.scalar_one_or_none()
@@ -91,8 +91,8 @@ async def init_save(
         schema_version=1
     )
     db.add(new_save)
-    await db.commit()
-    await db.refresh(new_save)
+    db.commit()
+    db.refresh(new_save)
 
     return {
         "state": new_save.state_json,
@@ -100,7 +100,6 @@ async def init_save(
     }
 
 
-async def update_save(db: AsyncSession, save: GameSave) -> None:
-    """更新存档（事件结算等场景使用）"""
-    await db.commit()
-    await db.refresh(save)
+def update_save(db: Session, save: GameSave) -> None:
+    db.commit()
+    db.refresh(save)

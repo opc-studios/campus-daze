@@ -32,3 +32,4 @@ docker-compose.override.yml
 
 .trae/
 .pw-browsers
+test-results
